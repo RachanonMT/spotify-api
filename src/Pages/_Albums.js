@@ -47,8 +47,8 @@ export default function _Albums() {
                                         <img src={val.cover} alt='cover'/>
                                    </div>
                                    <p className='playlist_name'>{val.name}</p>
-                                   <p className='create_by'>{val.artists?.map((val) => {
-                                        return <span>{val.name}</span>
+                                   <p className='create_by'>{val.artists?.map(( val, i ) => {
+                                        return <span key={i}>{val.name}</span>
                                    })}</p>
                                    <p className='tracks_number'>{val.release_date}</p>
                               </NavLink>

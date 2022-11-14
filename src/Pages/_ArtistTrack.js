@@ -127,17 +127,18 @@ export default function _ArtistTrack() {
      }
 
      useEffect(() => {
+          if(savedTrack.length != 0)
           getSaved()
      }, [data])
 
      useEffect(() => {
+          if(savedTrack.length != 0)
           getSaved()
      }, [savedTrack])
 
      useEffect(() => {
           getArtist()
      }, [])
-
 
      return (
           <div className='tracks'>
@@ -158,6 +159,7 @@ export default function _ArtistTrack() {
                                         chooseTrack(val.track)
                                    }}>
                                         <div className="cover td">
+                                             <i className="fa-solid fa-play play-track" onClick={() => {chooseTrack(val.track)}}/>
                                              <img src={val.image} alt="cover"/>
                                         </div>
                                         <div className="title td">{val.name}

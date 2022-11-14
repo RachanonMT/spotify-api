@@ -122,11 +122,13 @@ export default function _PlaylistTrack() {
      }
 
      useEffect(() => {
+          if(savedTrack.length != 0)
           getSaved()
      }, [data])
 
      useEffect(() => {
-          getSaved()
+          if(savedTrack.length != 0)
+               getSaved()
      }, [savedTrack])
      
      useEffect(() => {
@@ -166,8 +168,11 @@ export default function _PlaylistTrack() {
                     <div className='table_body'>
                          {tracks.map(( val, i ) => {
                               return (
-                                   <div className='tr' key={ val.id } onDoubleClick={ () => {chooseTrack(val.playlist)} }>
-                                        <div className="num td">{ val.no }</div>
+                                   <div className='tr' key={ i } onDoubleClick={ () => {chooseTrack(val.playlist)} }>
+                                        <div className="num td">
+                                             <span>{ val.no }</span>
+                                             <i className="fa-solid fa-play play-track" onClick={() => {chooseTrack(val.playlist)}}/>
+                                        </div>
                                         <div className="title td">{ val.name }</div>
                                         <div className="artist td">
                                              { val.artists.join(", ") }

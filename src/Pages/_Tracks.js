@@ -4,7 +4,6 @@ import { reducerCases } from "../Auth/Const"
 import { useStateProvider } from '../Auth/StateProvider'
 import AddedDate from '../Helpers/AddedDate'
 import ConvertMs from '../Helpers/ConvertMs'
-import LikeTrack from '../Helpers/LikeTrack'
 
 export default function _Tracks() {
      const [{ token, currentPlaying }, dispatch]  = useStateProvider()
@@ -86,6 +85,7 @@ export default function _Tracks() {
                                         chooseTrack(val.track)
                                    }}>
                                         <div className="cover td">
+                                             <i className="fa-solid fa-play play-track" onClick={() => {chooseTrack(val.track)}}/>
                                              <img src={val.cover} alt="cover"/>
                                         </div>
                                         <div className="title td">{val.title}

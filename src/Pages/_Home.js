@@ -16,6 +16,7 @@ export default function _Home() {
      const [data, setData]                        = useState(0)
 
      const getSeeds = async () => {
+          setSeeds([])
           const response = await axios.get(`https://api.spotify.com/v1/me/top/artists?limit=5`, {
                headers: {
                     Authorization: "Bearer " + token,
@@ -28,30 +29,32 @@ export default function _Home() {
      }
      
      const getRecommend = async () => {
-          const res = await axios.get(`https://api.spotify.com/v1/recommendations?seed_artists=${seeds.seeds.join(",")}&limit=5`, {
-               headers: {
-                    Authorization: "Bearer " + token,
-                    "Content-Type": "application/json",
-               },
-          })
-          res.data.tracks.map(( track ) => {
-               setSavedTrack(( savedTrack ) => ([...savedTrack, track.id]))
-               setTracks(( tracks ) => ([...tracks, {
-                    track: {
-                         uris: [track.uri],
-                         position_ms: 0,
-                         id: track.id,
+          if(seeds){
+               const res = await axios.get(`https://api.spotify.com/v1/recommendations?seed_artists=${seeds.seeds?.join(",")}&limit=5`, {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
                     },
-                    id: track.id,
-                    name: track.name,
-                    album: track.album.name,
-                    album_id: track.album.id,
-                    artist: track.artists.map((artist) => artist.name),
-                    explicit: track.explicit,
-                    image: track.album.images[2].url,
-                    duration: ConvertMs(track.duration_ms),
-               }]))
-          })
+               })
+               res.data.tracks.map(( track ) => {
+                    setSavedTrack(( savedTrack ) => ([...savedTrack, track.id]))
+                    setTracks(( tracks ) => ([...tracks, {
+                         track: {
+                              uris: [track.uri],
+                              position_ms: 0,
+                              id: track.id,
+                         },
+                         id: track.id,
+                         name: track.name,
+                         album: track.album.name,
+                         album_id: track.album.id,
+                         artist: track.artists.map((artist) => artist.name),
+                         explicit: track.explicit,
+                         image: track.album.images[2].url,
+                         duration: ConvertMs(track.duration_ms),
+                    }]))
+               })
+          }
 
           const response = await axios.get(`https://api.spotify.com/v1/browse/new-releases?limit=10`, {
                headers: {
@@ -71,16 +74,18 @@ export default function _Home() {
      }
     
      const getSaved = async () => {
-          const id = savedTrack.join(",")
-          const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
-               headers: {
-                    Authorization: "Bearer " + token,
-                    "Content-Type": "application/json",
-               },
-          })
-          res.data.map(( like ) => {
-               setLiked(( liked ) => ([...liked, like]))
-          })
+          if(savedTrack != []){
+               const id = savedTrack.join(",")
+               const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               })
+               res.data.map(( like ) => {
+                    setLiked(( liked ) => ([...liked, like]))
+               })
+          }
      }
 
      const likeTrack = async (id) => {
@@ -128,19 +133,24 @@ export default function _Home() {
      }
 
      useEffect(() => {
+          if(savedTrack.length != 0)
           getSaved()
      }, [data])
 
      useEffect(() => {
+          if(savedTrack.length != 0)
           getSaved()
      }, [savedTrack])
 
      useEffect(() => {
+          setTracks([])
+          setSeeds([])
           getSeeds()
      }, [])
 
      useEffect(() => {
-          getRecommend()
+          if(seeds.length != 0)
+               getRecommend()
      }, [seeds])
 
      return (
@@ -155,6 +165,7 @@ export default function _Home() {
                                    }}>
                                         <div className="cover td">
                                              <img src={val.image} alt="cover"/>
+                                             <i className="fa-solid fa-play play-track" onClick={() => {chooseTrack(val.track)}}/>
                                         </div>
                                         <div className="title td">{val.name}
                                              {val.explicit === true &&

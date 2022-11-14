@@ -122,10 +122,12 @@ export default function _AlbumTrack() {
      }
 
      useEffect(() => {
+          if(savedTrack.length != 0)
           getSaved()
      }, [data])
 
      useEffect(() => {
+          if(savedTrack.length != 0)
           getSaved()
      }, [savedTrack])
 
@@ -171,7 +173,10 @@ export default function _AlbumTrack() {
                          {tracks.map(( val, i ) => {
                               return (
                                    <div className='tr' key={ val.id } onDoubleClick={() => { chooseTrack( val.album ) }}>
-                                        <div className="num td">{ val.no }</div>
+                                        <div className="num td">
+                                             <span>{ val.no }</span>
+                                             <i className="fa-solid fa-play play-track" onClick={() => {chooseTrack(val.album)}}/>     
+                                        </div>
                                         <div className="title td">{ val.name }</div>
                                         <div className="artist td">
                                              {val.artists.join(", ")}

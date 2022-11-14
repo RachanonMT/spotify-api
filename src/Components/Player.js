@@ -6,16 +6,19 @@ import ConvertMs from '../Helpers/ConvertMs'
 
 export default function Player() {
      const [{ token, deviceId, currentPlaying, device }, dispatch] = useStateProvider()
-     const [paused, setPaused] = useState(true)
-     const [time, setTime] = useState(0)
-     const [tmp, setTmp] = useState(0)
-     const [inputTime, setInputTime] = useState(false)
-     const [volume, setVolume] = useState(0)
-     const [inputVol, setInputVol] = useState(false)
-     const [vol, setVol] = useState(0)
-     const [availableDevice, setAvailableDevice] = useState([])
-     const [openDevice, setOpenDevice] = useState(false)
-     const [trackInfo, setTrackInfo] = useState({
+     const [paused, setPaused]                    = useState(true)
+     const [time, setTime]                        = useState(0)
+     const [tmp, setTmp]                          = useState(0)
+     const [inputTime, setInputTime]              = useState(false)
+     const [volume, setVolume]                    = useState(0)
+     const [inputVol, setInputVol]                = useState(false)
+     const [vol, setVol]                          = useState(0)
+     const [availableDevice, setAvailableDevice]  = useState([])
+     const [openDevice, setOpenDevice]            = useState(false)
+     const [liked, setLiked]                      = useState()
+     const [savedTrack, setSavedTrack]            = useState([])
+     const [data, setData]                        = useState(0)
+     const [trackInfo, setTrackInfo]              = useState({
           status: false,
           name: '',
           cover: '',
@@ -26,6 +29,7 @@ export default function Player() {
      const [check, setCheck] = useState("")
 
      const playTrack =  async () => {
+          if(deviceId != '')
           await axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, 
                currentPlaying,    
                {
@@ -35,7 +39,6 @@ export default function Player() {
                }
           })
           setPaused(false)
-          setTime(parseInt(currentPlaying.position_ms)/1000)
      }
 
      const handlePause = () => {
@@ -43,8 +46,10 @@ export default function Player() {
                setTime(state.position)
                setVolume(device._options.volume * 100)
                setPaused(state.paused)
+               // setSavedTrack(state.track_window.current_track.id)
                setTrackInfo({
                     status: true,
+                    id: state.track_window.current_track.id,
                     name: state.track_window.current_track.name,
                     cover: state.track_window.current_track.album.images[2].url,
                     artist: state.track_window.current_track.artists.map((val) => ({
@@ -77,7 +82,7 @@ export default function Player() {
      }
 
      const playVolume =  async (val) => {
-          await axios.put(`     https://api.spotify.com/v1/me/player/volume?device_id=${deviceId}&volume_percent=${val}`, 
+          await axios.put(`https://api.spotify.com/v1/me/player/volume?device_id=${deviceId}&volume_percent=${val}`, 
                {
                },
                {
@@ -114,7 +119,7 @@ export default function Player() {
      }
 
      const transferDevice = async (val) => {
-          const res = await axios.put(`https://api.spotify.com/v1/me/player`,
+          await axios.put(`https://api.spotify.com/v1/me/player`,
                {
                     "device_ids": [
                          val
@@ -126,6 +131,58 @@ export default function Player() {
                          "Content-Type": "application/json",
                }
           })
+     }
+
+     const getSaved = async () => {
+          if(savedTrack != []){
+               const id = savedTrack
+               const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               })
+               setLiked(res.data[0])
+          }
+     }
+
+     const likeTrack = async (id) => {
+          await axios.put(`https://api.spotify.com/v1/me/tracks?ids=${id}`, 
+               {
+                    ids: [
+                         `${id}`
+                    ]
+               },
+               {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               }
+          )
+          setData(( data ) => data = data + 1)
+     }
+
+     const unlikeTrack = async (id) => {
+          await axios.delete(`https://api.spotify.com/v1/me/tracks?ids=${id}`, 
+               {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               }
+          )
+          setData(( data ) => data = data + 1)
+     }
+
+     const handleLike = (val, id) => {
+          if(val == true){
+               unlikeTrack(id)
+               useState(false)
+          }else{
+               likeTrack(id)
+               useState(true)
+          }
      }
 
      const handleTransfer = (val) => {
@@ -159,12 +216,20 @@ export default function Player() {
      }, [currentPlaying])
 
      useEffect(() => {
+          if(savedTrack.length != 0)
+          getSaved()
+     }, [data])
+
+     useEffect(() => {
           setAvailableDevice([])
           setOpenDevice(false)
      }, [])
 
      useEffect(() => {
           playTrack()
+          setLiked([])
+          if(savedTrack.length != 0)
+          getSaved()
      }, [currentPlaying])
 
      // const slider = document.getElementById("volume");
@@ -199,7 +264,14 @@ export default function Player() {
                          <img src={trackInfo.cover} alt=''/>
                     </div>
                     <div className='playback-name'>
-                         <p className='name'>{trackInfo.name}{trackInfo.status?<i className="fa-solid fa-heart hearted"/>:""}</p>
+                         <p className='name'>{trackInfo.name}
+                              {trackInfo.status?(
+                                   <i className={liked? "fa-solid fa-heart hearted":"fa-regular fa-heart"} onClick={() => {
+                                                  handleLike(liked, trackInfo.id)
+                                   }}/>)
+                                   :""
+                              }
+                         </p>
                          <p className='artist'>{trackInfo.artist[0].name}</p>
                          <p className='from'>{trackInfo.status?'PLAYING FROM : TRACKS':""}</p>
                     </div>    
