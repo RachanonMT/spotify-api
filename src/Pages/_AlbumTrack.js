@@ -9,7 +9,10 @@ export default function _AlbumTrack() {
      const [{ token, currentPlaying }, dispatch]  = useStateProvider()
      const [tracks, setTracks]                    = useState([])
      const [albums, setAlbums]                    = useState([])
+     const [savedTrack, setSavedTrack]            = useState([])
+     const [liked, setLiked]                      = useState([])
      const [duration, setDuration]                = useState(0)
+     const [data, setData]                        = useState(0)
 
      const getAlbums = async () => {
           const res = await axios.get(`https://api.spotify.com/v1/albums/${albumId}`, {
@@ -38,7 +41,10 @@ export default function _AlbumTrack() {
                },
           });
           const { items } = response.data;
+          setLiked([])
+          setTracks([])
           items.map(( track ) => {
+               setSavedTrack(( savedTrack ) => ([...savedTrack, track.id]))
                setDuration(( duration ) => duration + track.duration_ms)
                setTracks(tracks => ([...tracks, {
                     album: {
@@ -58,15 +64,74 @@ export default function _AlbumTrack() {
           })
      };
 
+     const getSaved = async () => {
+          const id = savedTrack.join(",")
+          const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
+               headers: {
+                    Authorization: "Bearer " + token,
+                    "Content-Type": "application/json",
+               },
+          })
+          res.data.map(( like ) => {
+               setLiked(( liked ) => ([...liked, like]))
+          })
+     }
+
+     const likeTrack = async (id) => {
+          await axios.put(`https://api.spotify.com/v1/me/tracks?ids=${id}`, 
+               {
+                    ids: [
+                         `${id}`
+                    ]
+               },
+               {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               }
+          )
+          setData(( data ) => data = data + 1)
+     }
+
+     const unlikeTrack = async (id) => {
+          await axios.delete(`https://api.spotify.com/v1/me/tracks?ids=${id}`, 
+               {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               }
+          )
+          setData(( data ) => data = data + 1)
+     }
+
+     const handleLike = (val, id, index) => {
+          if(val == true){
+               unlikeTrack(id)
+               liked[index] = false
+          }else{
+               likeTrack(id)
+               liked[index] = true
+          }
+     }
+
      const chooseTrack = (track) => {
           const currentPlaying = track
           dispatch({ type: reducerCases.SET_PLAYING, currentPlaying })
      }
 
      useEffect(() => {
+          getSaved()
+     }, [data])
+
+     useEffect(() => {
+          getSaved()
+     }, [savedTrack])
+
+     useEffect(() => {
           getAlbums()
      }, [])
-
 
      return (
           <div className='albums'>
@@ -103,9 +168,9 @@ export default function _AlbumTrack() {
                          <div className="track_btn th"></div>
                     </div>
                     <div className='table_body'>
-                         {tracks.map(( val ) => {
+                         {tracks.map(( val, i ) => {
                               return (
-                                   <div className='tr' key={ val.id } onClick={() => { chooseTrack( val.album ) }}>
+                                   <div className='tr' key={ val.id } onDoubleClick={() => { chooseTrack( val.album ) }}>
                                         <div className="num td">{ val.no }</div>
                                         <div className="title td">{ val.name }</div>
                                         <div className="artist td">
@@ -115,7 +180,9 @@ export default function _AlbumTrack() {
                                         <div className="track_btn td">
                                              <i className="fa-solid fa-ellipsis"/>
                                              <i className="fa-solid fa-plus"/>
-                                             <i className="fa-solid fa-heart hearted"/>
+                                             <i className={liked[i]? "fa-solid fa-heart hearted":"fa-regular fa-heart"} onClick={() => {
+                                                  handleLike(liked[i], val.id, i)
+                                             }} />
                                         </div>
                                    </div>
                               )

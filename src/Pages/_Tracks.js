@@ -4,10 +4,12 @@ import { reducerCases } from "../Auth/Const"
 import { useStateProvider } from '../Auth/StateProvider'
 import AddedDate from '../Helpers/AddedDate'
 import ConvertMs from '../Helpers/ConvertMs'
+import LikeTrack from '../Helpers/LikeTrack'
 
 export default function _Tracks() {
-     const [{ token, currentPlaying }, dispatch] = useStateProvider()
-     const [tracks, setTracks] = useState([])
+     const [{ token, currentPlaying }, dispatch]  = useStateProvider()
+     const [tracks, setTracks]                    = useState([])
+     const [data, setData]                        = useState(0)
 
      const getTracks = async () => {
           const response = await axios.get(`https://api.spotify.com/v1/me/tracks?limit=50`, {
@@ -37,12 +39,30 @@ export default function _Tracks() {
           })
      };
 
+     const unlikeTrack = async (id) => {
+          await axios.delete(`https://api.spotify.com/v1/me/tracks?ids=${id}`, 
+               {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               }
+          )
+          setData(( data ) => data = data + 1)
+     }
+
      const chooseTrack = (track) => {
           const currentPlaying = track
           dispatch({ type: reducerCases.SET_PLAYING, currentPlaying })
      }
 
+     const handleLike = (val, index) => {
+          unlikeTrack(val)
+          tracks.splice(index, 1)
+     }
+
      useEffect(() => {
+          setTracks([])
           getTracks();
      }, []);
 
@@ -60,9 +80,9 @@ export default function _Tracks() {
                          <div className="track_btn th"></div>
                     </div>
                     <div className='table_body'>
-                         {tracks.map(val => {
+                         {tracks.map(( val, i ) => {
                               return (
-                                   <div className='tr' key={val.id} onClick={() => {
+                                   <div className='tr' key={i} onDoubleClick={() => {
                                         chooseTrack(val.track)
                                    }}>
                                         <div className="cover td">
@@ -80,7 +100,7 @@ export default function _Tracks() {
                                         <div className="track_btn td">
                                              <i className="fa-solid fa-ellipsis"/>
                                              <i className="fa-solid fa-plus"/>
-                                             <i className="fa-solid fa-heart hearted"/>
+                                             <i className="fa-solid fa-heart hearted" onClick={() => {handleLike(val.id, i)}}/>
                                         </div>
                                    </div>
                               )

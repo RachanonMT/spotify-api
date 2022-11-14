@@ -23,6 +23,8 @@ export default function Player() {
           duration: 0,
      })
 
+     const [check, setCheck] = useState("")
+
      const playTrack =  async () => {
           await axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, 
                currentPlaying,    
@@ -87,6 +89,7 @@ export default function Player() {
      }
 
      const getDevice = async () => {
+          setCheck("")
           const res = await axios.get(`https://api.spotify.com/v1/me/player/devices`, {
                headers: {
                     Authorization: "Bearer " + token,
@@ -95,6 +98,9 @@ export default function Player() {
           })
           setAvailableDevice([])
           res.data.devices.map(( val ) => {
+               if(val.is_active == false) {
+                    setCheck("Device")
+               }
                setAvailableDevice(( availableDevice ) => ([...availableDevice, {
                     id: val.id,
                     is_active: val.is_active,
@@ -264,12 +270,13 @@ export default function Player() {
                                    }
                                    
                               })}
-                              {availableDevice.map(( val ) => {
-                                   if(val.is_active == false){
-                                        val = 0
-                                        return <p className='device-title'>Device</p>
+                              {/* {( ) => {
+                                   if(this.check == 1){
+                                        return <p className='device-title'>{check}</p>
+                                        this.check = 0
                                    }
-                              })}
+                              }} */}
+                              <p className='device-title'>{check}</p>
                               {availableDevice.map(( val ) => {
                                    if(val.is_active == false){
                                         return (
@@ -283,7 +290,7 @@ export default function Player() {
                          </div>)}
                     </div>
                     <div className='volume-device'>
-                         <i class="fa-solid fa-volume-low"></i>
+                         <i className="fa-solid fa-volume-low"></i>
                               <input type='range' id='volume' className='volume-input' min='0' max='100' value={inputVol?vol:volume}
                                    onMouseUp={(e) => {
                                         setInputTime(false)

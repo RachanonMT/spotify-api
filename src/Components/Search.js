@@ -6,10 +6,12 @@ import ConvertMs from '../Helpers/ConvertMs'
 import { NavLink } from 'react-router-dom'
 
 export default function Search({query, setSearch}) {
-     const [{ token, currentPlaying }, dispatch] = useStateProvider()
-     const [tracks, setTracks] = useState([])
-     const [albums, setAlbums] = useState([])
-     const [artists, setArtists] = useState([])
+     const [{ token, currentPlaying }, dispatch]  = useStateProvider()
+     const [tracks, setTracks]                    = useState([])
+     const [albums, setAlbums]                    = useState([])
+     const [savedTrack, setSavedTrack]            = useState([])
+     const [liked, setLiked]                      = useState([])
+     const [artists, setArtists]                  = useState([])
 
      const getTracks = async () => {
           const response = await axios.get(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=5`, {
@@ -19,6 +21,7 @@ export default function Search({query, setSearch}) {
                },
           });
           response.data.tracks.items?.map((track) => {
+               setSavedTrack(( savedTrack ) => ([...savedTrack, track.id]))
                setTracks(tracks => ([...tracks, {
                     track: {
                          uris: [track.uri],
@@ -77,6 +80,19 @@ export default function Search({query, setSearch}) {
           })
      };
 
+     const getSaved = async () => {
+          const id = savedTrack.join(",")
+          const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
+               headers: {
+                    Authorization: "Bearer " + token,
+                    "Content-Type": "application/json",
+               },
+          })
+          res.data.map(( like ) => {
+               setLiked(( liked ) => ([...liked, like]))
+          })
+     }
+
      const handleClick = () => {
           setSearch('')
      }
@@ -87,13 +103,18 @@ export default function Search({query, setSearch}) {
      }
 
      useEffect(() => {
+          getSaved()
+     }, [savedTrack])
+
+     useEffect(() => {
+          setLiked([])
           setTracks([])
           setAlbums([])
           setArtists([])
+          setSavedTrack([])
           getTracks()
           getAlbums()
           getArtists()
-          console.log(1);
      }, [query])
 
      return (
@@ -112,7 +133,7 @@ export default function Search({query, setSearch}) {
                     <div className='search_track'>
                          <p className='search_title'>Tracks</p>
                          <div className='search_track_row'>
-                              {tracks.map(val => {
+                              {tracks.map(( val, i ) => {
                                    return (
                                         <div className='tr' key={val.id} onClick={() => {chooseTrack(val.track)}}>
                                              <div className="cover td">
@@ -125,6 +146,9 @@ export default function Search({query, setSearch}) {
                                                   <p className='artist'>{val.artist[0].name}</p>
                                              </div>
                                              <div className="time td">{val.duration}</div>
+                                             <div className="track_btn td">
+                                                  <i className={liked[i]? "fa-solid fa-heart hearted":"fa-regular fa-heart"}/>
+                                             </div>
                                         </div>
                                    )
                               })}

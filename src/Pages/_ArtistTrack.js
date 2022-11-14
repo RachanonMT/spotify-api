@@ -8,9 +8,13 @@ import { NavLink } from 'react-router-dom'
 export default function _ArtistTrack() {
      const artistId = new URLSearchParams( window.location.search).get("id" )
      const [{ token, currentPlaying }, dispatch ] = useStateProvider()
-     const [ artist, setArtist ] = useState([])
-     const [ tracks, setTracks ] = useState([])
-     const [ albums, setAlbums ] = useState([])
+     const [ artist, setArtist ]                  = useState([])
+     const [ tracks, setTracks ]                  = useState([])
+     const [ albums, setAlbums ]                  = useState([])
+     const [savedTrack, setSavedTrack]            = useState([])
+     const [liked, setLiked]                      = useState([])
+     const [duration, setDuration]                = useState(0)
+     const [data, setData]                        = useState(0)
 
      const getArtist = async () => {
           const res = await axios.get(`https://api.spotify.com/v1/artists/${artistId}`, {
@@ -32,6 +36,7 @@ export default function _ArtistTrack() {
                },
           });
           response.data.tracks.map(( track ) => {
+               setSavedTrack(( savedTrack ) => ([...savedTrack, track.id]))
                setTracks(( tracks ) => ([ ...tracks, {
                     track: {
                          uris: [track.uri],
@@ -64,10 +69,70 @@ export default function _ArtistTrack() {
           })
      };
 
+     const getSaved = async () => {
+          const id = savedTrack.join(",")
+          const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
+               headers: {
+                    Authorization: "Bearer " + token,
+                    "Content-Type": "application/json",
+               },
+          })
+          res.data.map(( like ) => {
+               setLiked(( liked ) => ([...liked, like]))
+          })
+     }
+
+     const likeTrack = async (id) => {
+          await axios.put(`https://api.spotify.com/v1/me/tracks?ids=${id}`, 
+               {
+                    ids: [
+                         `${id}`
+                    ]
+               },
+               {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               }
+          )
+          setData(( data ) => data = data + 1)
+     }
+
+     const unlikeTrack = async (id) => {
+          await axios.delete(`https://api.spotify.com/v1/me/tracks?ids=${id}`, 
+               {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               }
+          )
+          setData(( data ) => data = data + 1)
+     }
+
+     const handleLike = (val, id, index) => {
+          if(val == true){
+               unlikeTrack(id)
+               liked[index] = false
+          }else{
+               likeTrack(id)
+               liked[index] = true
+          }
+     }
+
      const chooseTrack = ( track ) => {
           const currentPlaying = track
           dispatch({ type: reducerCases.SET_PLAYING, currentPlaying })
      }
+
+     useEffect(() => {
+          getSaved()
+     }, [data])
+
+     useEffect(() => {
+          getSaved()
+     }, [savedTrack])
 
      useEffect(() => {
           getArtist()
@@ -83,14 +148,13 @@ export default function _ArtistTrack() {
                          <div className="title th">TITLE</div>
                          <div className="artist th">ARTIST</div>
                          <div className="album th">ALBUM</div>
-                         <div className="added th">DATE ADDED</div>
                          <div className="time th">TIME</div>
                          <div className="track_btn th"></div>
                     </div>
                     <div className='table_body'>
-                         {tracks.map(val => {
+                         {tracks.map(( val, i ) => {
                               return (
-                                   <div className='tr' key={val.id} onClick={() => {
+                                   <div className='tr' key={val.id} onDoubleClick={() => {
                                         chooseTrack(val.track)
                                    }}>
                                         <div className="cover td">
@@ -103,11 +167,13 @@ export default function _ArtistTrack() {
                                         </div>
                                         <div className="artist td">{val.artist.join(", ")}</div>
                                         <div className="album td">{val.album}</div>
-                                        <div className="time td">{val.duration}</div>
+                                        <div className="time td">{ConvertMs(val.duration)}</div>
                                         <div className="track_btn td">
                                              <i className="fa-solid fa-ellipsis"/>
                                              <i className="fa-solid fa-plus"/>
-                                             <i className="fa-solid fa-heart hearted"/>
+                                             <i className={liked[i]? "fa-solid fa-heart hearted":"fa-regular fa-heart"} onClick={() => {
+                                                  handleLike(liked[i], val.id, i)
+                                             }} />
                                         </div>
                                    </div>
                               )
