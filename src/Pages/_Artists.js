@@ -30,15 +30,17 @@ export default function _Artists() {
      return (
           <div>
                <p className='title'>My Artists</p>
-               <div className='show_playlists'>
+               <div className='show_artist'>
                     {artist.map((val) => {
                          return (
-                              <NavLink className='playlist' key={val.id} to={`/me/artist/?id=${val.id}`}>
-                                   <div className='playlist_image'>
-                                        <img src={val.image} alt='cover'/>
-                                   </div>
-                                   <p className='playlist_name'>{val.name}</p>
-                              </NavLink>
+                              <div className='playlist' key={val.id}>
+                                   <NavLink to={`/me/artist/?id=${val.id}`}>
+                                        <div  className='playlist_image'>     
+                                             <img src={val.image} alt='cover'/>
+                                        </div>
+                                   </NavLink>
+                                   <p className='playlist_name'>{val.name} </p>
+                              </div>
                          )
                     })}
                </div>

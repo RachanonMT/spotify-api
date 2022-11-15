@@ -6,11 +6,14 @@ import AddedDate from '../Helpers/AddedDate'
 import ConvertMs from '../Helpers/ConvertMs'
 
 export default function _Tracks() {
-     const [{ token, currentPlaying }, dispatch]  = useStateProvider()
+     const [{ token, currentPlaying, data }, dispatch]  = useStateProvider()
      const [tracks, setTracks]                    = useState([])
-     const [data, setData]                        = useState(0)
+     const [savedTrack, setSavedTrack]            = useState([])
+     const [liked, setLiked]                      = useState([])
+     const [dataTmp, setDataTmp]                  = useState(data)
 
      const getTracks = async () => {
+          setSavedTrack([])
           const response = await axios.get(`https://api.spotify.com/v1/me/tracks?limit=50`, {
                headers: {
                     Authorization: "Bearer " + token,
@@ -19,6 +22,7 @@ export default function _Tracks() {
           })
           const { items } = response.data;
           items.map(( track ) => {
+               setSavedTrack(( savedTrack ) => ([...savedTrack, track.track.id]))
                setTracks(( tracks ) => ([...tracks, {
                     track: {
                          uris: [track.track.uri],
@@ -47,7 +51,36 @@ export default function _Tracks() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
+     }
+
+     const getSaved = async () => {
+          const id = savedTrack.join(",")
+          const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
+               headers: {
+                    Authorization: "Bearer " + token,
+                    "Content-Type": "application/json",
+               },
+          })
+          if(liked.length !== 0){
+               for(let i=0; i<res.data.length; i++){
+                    if(liked[i] != res.data[i]){
+                         updateLike(i)
+                    }
+               }
+          }else{
+               res.data.map(( like ) => {
+                    setLiked(( liked ) => ([...liked, like]))
+               })
+          }
+     }
+
+     const updateLike = ( idx ) => {
+          const newLiked = [...liked];
+          newLiked[ idx ] = !newLiked[ idx ]
+          setLiked( newLiked )
      }
 
      const chooseTrack = (track) => {
@@ -55,13 +88,30 @@ export default function _Tracks() {
           dispatch({ type: reducerCases.SET_PLAYING, currentPlaying })
      }
 
-     const handleLike = (val, index) => {
+     const handleLike = (tmp, val, index) => {
           unlikeTrack(val)
           tracks.splice(index, 1)
      }
 
      useEffect(() => {
+          if(savedTrack.length != 0)
+          getSaved()
+     }, [data])
+
+     useEffect(() => {
+          if(savedTrack.length != 0)
+          getSaved()
+     }, [tracks])
+
+     useEffect(() => {
+          if(savedTrack.length != 0)
+          getSaved()
+     }, [savedTrack])
+
+     useEffect(() => {
+          setSavedTrack([])
           setTracks([])
+          setLiked([])
           getTracks();
      }, []);
 
@@ -100,7 +150,9 @@ export default function _Tracks() {
                                         <div className="track_btn td">
                                              <i className="fa-solid fa-ellipsis"/>
                                              <i className="fa-solid fa-plus"/>
-                                             <i className="fa-solid fa-heart hearted" onClick={() => {handleLike(val.id, i)}}/>
+                                             <i className={liked[i]? "fa-solid fa-heart hearted":"fa-regular fa-heart"} onClick={() => {
+                                                  handleLike(liked[i], val.id, i)
+                                             }} />
                                         </div>
                                    </div>
                               )

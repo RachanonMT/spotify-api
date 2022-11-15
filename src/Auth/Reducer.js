@@ -5,6 +5,7 @@ export const initialState = {
      currentPlaying: null,
      deviceId: '',
      device: null,
+     data: 0,
 };
 
 const reducer = (state, action) => {
@@ -28,6 +29,11 @@ const reducer = (state, action) => {
                return {
                     ...state,
                     device: action.device,
+               };
+          case reducerCases.SET_DATA:
+               return {
+                    ...state,
+                    data: action.data,
                };
           default:
                return state;

@@ -7,16 +7,17 @@ import { NavLink } from 'react-router-dom'
 
 export default function _ArtistTrack() {
      const artistId = new URLSearchParams( window.location.search).get("id" )
-     const [{ token, currentPlaying }, dispatch ] = useStateProvider()
+     const [{ token, currentPlaying, data }, dispatch ] = useStateProvider()
      const [ artist, setArtist ]                  = useState([])
      const [ tracks, setTracks ]                  = useState([])
      const [ albums, setAlbums ]                  = useState([])
      const [savedTrack, setSavedTrack]            = useState([])
      const [liked, setLiked]                      = useState([])
      const [duration, setDuration]                = useState(0)
-     const [data, setData]                        = useState(0)
+     const [dataTmp, setDataTmp]                  = useState(data)
 
      const getArtist = async () => {
+          setTracks([])
           const res = await axios.get(`https://api.spotify.com/v1/artists/${artistId}`, {
                headers: {
                     Authorization: "Bearer " + token,
@@ -96,7 +97,9 @@ export default function _ArtistTrack() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
      }
 
      const unlikeTrack = async (id) => {
@@ -108,7 +111,9 @@ export default function _ArtistTrack() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
      }
 
      const handleLike = (val, id, index) => {
@@ -141,8 +146,28 @@ export default function _ArtistTrack() {
      }, [])
 
      return (
-          <div className='tracks'>
-               <p className='title'>My Tracks</p>
+          <div className='artists'>
+               <div className="header-info">
+                    <img className='image-bg' src={ artist.cover }/>
+                    <div className="playlists_banner">
+                         <img className="album_cover" src={ artist.cover } alt='album_art'/>
+                         <div className="album_info">
+                              <p className="album_type">Artist</p>
+                              <p className="album_name">{ artist.name }</p>
+                         </div>
+                    </div>
+                    <div className="album_control">
+                         <button className="album_play_btn">
+                              <div className="inside_btn">
+                                   <i className="fa-solid fa-play"></i>
+                                   Play
+                              </div>
+                         </button>
+                    </div>
+               </div>
+               <div className='album_search'>
+                    <p className='search_title'>Top Tracks</p>
+               </div>
                <div className='table'>
                     <div className='tr'>
                          <div className="cover th"></div>

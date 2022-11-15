@@ -6,13 +6,13 @@ import ConvertMs from '../Helpers/ConvertMs'
 
 export default function _AlbumTrack() {
      const albumId = new URLSearchParams(window.location.search).get("id")
-     const [{ token, currentPlaying }, dispatch]  = useStateProvider()
+     const [{ token, currentPlaying, data }, dispatch]  = useStateProvider()
      const [tracks, setTracks]                    = useState([])
      const [albums, setAlbums]                    = useState([])
      const [savedTrack, setSavedTrack]            = useState([])
      const [liked, setLiked]                      = useState([])
      const [duration, setDuration]                = useState(0)
-     const [data, setData]                        = useState(0)
+     const [dataTmp, setDataTmp]                  = useState(data)
 
      const getAlbums = async () => {
           const res = await axios.get(`https://api.spotify.com/v1/albums/${albumId}`, {
@@ -41,7 +41,6 @@ export default function _AlbumTrack() {
                },
           });
           const { items } = response.data;
-          setLiked([])
           setTracks([])
           items.map(( track ) => {
                setSavedTrack(( savedTrack ) => ([...savedTrack, track.id]))
@@ -52,7 +51,8 @@ export default function _AlbumTrack() {
                          "offset": {
                               "position": track.track_number-1
                          },
-                         "position_ms": 0
+                         "position_ms": 0,
+                         id: track.id,
                     },
                     no: track.track_number,
                     id: track.id,
@@ -65,16 +65,32 @@ export default function _AlbumTrack() {
      };
 
      const getSaved = async () => {
-          const id = savedTrack.join(",")
-          const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
-               headers: {
-                    Authorization: "Bearer " + token,
-                    "Content-Type": "application/json",
-               },
-          })
-          res.data.map(( like ) => {
-               setLiked(( liked ) => ([...liked, like]))
-          })
+          if(savedTrack.length != 0){
+               const id = savedTrack.join(",")
+               const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               })
+               if(liked.length !== 0){
+                    for(let i=0; i<res.data.length; i++){
+                         if(liked[i] != res.data[i]){
+                              updateLike(i)
+                         }
+                    }
+               }else{
+                    res.data.map(( like ) => {
+                         setLiked(( liked ) => ([...liked, like]))
+                    })
+               }
+          }
+     }
+
+     const updateLike = ( idx ) => {
+          const newLiked = [...liked];
+          newLiked[ idx ] = !newLiked[ idx ]
+          setLiked( newLiked )
      }
 
      const likeTrack = async (id) => {
@@ -91,7 +107,9 @@ export default function _AlbumTrack() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
      }
 
      const unlikeTrack = async (id) => {
@@ -103,7 +121,9 @@ export default function _AlbumTrack() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
      }
 
      const handleLike = (val, id, index) => {
@@ -129,6 +149,11 @@ export default function _AlbumTrack() {
      useEffect(() => {
           if(savedTrack.length != 0)
           getSaved()
+     }, [liked])
+
+     useEffect(() => {
+          if(savedTrack.length != 0)
+          getSaved()
      }, [savedTrack])
 
      useEffect(() => {
@@ -137,29 +162,32 @@ export default function _AlbumTrack() {
 
      return (
           <div className='albums'>
-               <div className="playlists_banner">
-                    <img className="album_cover" src={ albums.cover } alt='album_art'/>
-                    <div className="album_info">
-                         <p className="album_type">{ albums.type }</p>
-                         <p className="album_name">{ albums.name }</p>
-                         <p className="album_artist">
-                              {albums.artist?.map(( artist, index ) => {
-                                   return <span key={ index }>{ artist.name } </span>
-                              })}
-                         </p>
-                         <p className="album_track_total">
-                              <span>{ albums.total } Tracks &nbsp; | &nbsp; {ConvertMs( duration, 1 )}</span>
-                         </p>
-                         <p className='album_release'>{ albums.release }</p>
-                    </div>
-               </div>
-               <div className="album_control">
-                    <button className="album_play_btn">
-                         <div className="inside_btn">
-                              <i className="fa-solid fa-play"></i>
-                              Play
+               <div className="header-info">
+                    <img className='image-bg' src={albums.cover}/>
+                    <div className="playlists_banner">
+                         <img className="album_cover" src={ albums.cover } alt='album_art'/>
+                         <div className="album_info">
+                              <p className="album_type">{ albums.type }</p>
+                              <p className="album_name">{ albums.name }</p>
+                              <p className="album_artist">
+                                   {albums.artist?.map(( artist, index ) => {
+                                        return <span key={ index }>{ artist.name } </span>
+                                   })}
+                              </p>
+                              <p className="album_track_total">
+                                   <span>{ albums.total } Tracks &nbsp; | &nbsp; {ConvertMs( duration, 1 )}</span>
+                              </p>
+                              <p className='album_release'>{ albums.release }</p>
                          </div>
-                    </button>
+                    </div>
+                    <div className="album_control">
+                         <button className="album_play_btn">
+                              <div className="inside_btn">
+                                   <i className="fa-solid fa-play"></i>
+                                   Play
+                              </div>
+                         </button>
+                    </div>
                </div>
                <div className="table">
                     <div className='tr'>

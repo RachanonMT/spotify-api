@@ -7,7 +7,6 @@ import Profile from "./Profile";
 import { reducerCases } from "../Auth/Const"
 import { useStateProvider } from "../Auth/StateProvider";
 import Player from "./Player";
-import "../Config/AxiosConfig"
 
 export default function Home() {
      const [{ searchHistory }, dispatch] = useStateProvider()

@@ -5,7 +5,7 @@ import { useStateProvider } from '../Auth/StateProvider'
 import ConvertMs from '../Helpers/ConvertMs'
 
 export default function Player() {
-     const [{ token, deviceId, currentPlaying, device }, dispatch] = useStateProvider()
+     const [{ token, deviceId, currentPlaying, device, data }, dispatch] = useStateProvider()
      const [paused, setPaused]                    = useState(true)
      const [time, setTime]                        = useState(0)
      const [tmp, setTmp]                          = useState(0)
@@ -17,7 +17,7 @@ export default function Player() {
      const [openDevice, setOpenDevice]            = useState(false)
      const [liked, setLiked]                      = useState()
      const [savedTrack, setSavedTrack]            = useState([])
-     const [data, setData]                        = useState(0)
+     const [dataTmp, setDataTmp]                  = useState(data)
      const [trackInfo, setTrackInfo]              = useState({
           status: false,
           name: '',
@@ -29,24 +29,25 @@ export default function Player() {
      const [check, setCheck] = useState("")
 
      const playTrack =  async () => {
-          if(deviceId != '')
-          await axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, 
-               currentPlaying,    
-               {
-                    headers: {
-                         Authorization: "Bearer " + token,
-                         "Content-Type": "application/json",
-               }
-          })
-          setPaused(false)
+          if(deviceId != ''){
+               await axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, 
+                    currentPlaying,    
+                    {
+                         headers: {
+                              Authorization: "Bearer " + token,
+                              "Content-Type": "application/json",
+                    }
+               })
+               setPaused(false)
+          }
      }
 
      const handlePause = () => {
+          if(currentPlaying !== null)
           device.getCurrentState().then( state => { 
                setTime(state.position)
                setVolume(device._options.volume * 100)
                setPaused(state.paused)
-               // setSavedTrack(state.track_window.current_track.id)
                setTrackInfo({
                     status: true,
                     id: state.track_window.current_track.id,
@@ -134,7 +135,7 @@ export default function Player() {
      }
 
      const getSaved = async () => {
-          if(savedTrack != []){
+          if(currentPlaying !== null){
                const id = savedTrack
                const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
                     headers: {
@@ -160,7 +161,9 @@ export default function Player() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
      }
 
      const unlikeTrack = async (id) => {
@@ -172,16 +175,18 @@ export default function Player() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
      }
 
      const handleLike = (val, id) => {
           if(val == true){
-               unlikeTrack(id)
-               useState(false)
+               unlikeTrack(trackInfo.id)
+               setLiked(false)
           }else{
-               likeTrack(id)
-               useState(true)
+               likeTrack(trackInfo.id)
+               setLiked(true)
           }
      }
 
@@ -209,6 +214,13 @@ export default function Player() {
 
      useEffect(() => {
           if(currentPlaying !== null){
+               setSavedTrack(currentPlaying.id)
+               getSaved()
+          }
+     }, [currentPlaying])
+
+     useEffect(() => {
+          if(currentPlaying !== null){
                setInterval(() => {
                     handlePause()
                }, 1000);
@@ -216,9 +228,19 @@ export default function Player() {
      }, [currentPlaying])
 
      useEffect(() => {
-          if(savedTrack.length != 0)
+          if(currentPlaying !== null)
           getSaved()
      }, [data])
+
+     useEffect(() => {
+          if(currentPlaying !== null)
+          getSaved()
+     }, [liked])
+
+     useEffect(() => {
+          if(currentPlaying !== null)
+          getSaved()
+     }, [savedTrack])
 
      useEffect(() => {
           setAvailableDevice([])
@@ -227,35 +249,7 @@ export default function Player() {
 
      useEffect(() => {
           playTrack()
-          setLiked([])
-          if(savedTrack.length != 0)
-          getSaved()
      }, [currentPlaying])
-
-     // const slider = document.getElementById("volume");
-     // if(slider != null){
-     // slider.addEventListener("wheel", function(e){
-     //      if (e.deltaY < 0){
-     //           if(slider.valueAsNumber < 100){
-     //                slider.value = volume + 5;
-     //                // seekVolume(slider.valueAsNumber)
-     //                setVol(slider.valueAsNumber)
-     //                setVolume(slider.valueAsNumber)
-     //           }else{
-     //                console.log(slider.value, vol);
-     //           }
-     //      }
-     //      if(e.deltaY > 0){
-     //           if(slider.value > 0){
-     //                setVolume(slider.valueAsNumber - 5)
-     //                setVol(slider.valueAsNumber)
-     //                console.log("Down", slider.valueAsNumber, vol);
-     //                slider.value = volume - 5;
-     //           }
-     //      }
-     //      e.preventDefault();
-     //      e.stopPropagation();
-     // })}
 
      return (
           <div className="player">
@@ -342,12 +336,6 @@ export default function Player() {
                                    }
                                    
                               })}
-                              {/* {( ) => {
-                                   if(this.check == 1){
-                                        return <p className='device-title'>{check}</p>
-                                        this.check = 0
-                                   }
-                              }} */}
                               <p className='device-title'>{check}</p>
                               {availableDevice.map(( val ) => {
                                    if(val.is_active == false){
@@ -375,16 +363,10 @@ export default function Player() {
                                    onMouseDown={() => {
                                         setInputVol(true)
                                    }}
-                                   onMouseOver={(e) => {
-                                        setInputTime(true)
-                                        adjustVolume(e)
-                                   }}
-                                   onMouseLeave={() => {
-                                        setInputTime(false)
-                                   }}
                               ></input>
                               <progress className='volume-output' min='0' max='100' value={inputVol?vol:volume}></progress>
                     </div>
+                    <div></div>
                </div>
           </div>
      )

@@ -137,24 +137,27 @@ export default function _PlaylistTrack() {
 
      return (
           <div className='playlists'>
-               <div className="playlists_banner">
-                    <img className="album_cover" src={ playlists.cover } alt='album_art'/>
-                    <div className="album_info">
-                         <p className="album_type">{ playlists.public }&nbsp; &nbsp;{ playlists.type }</p>
-                         <p className="album_name">{ playlists.name }</p>
-                         <p className="playlist_owner">Created By { playlists.owner }</p>
-                         <p className="album_track_total">
-                              <span>{ playlists.total } Tracks &nbsp; | &nbsp; { ConvertMs( duration, 1 ) }</span>
-                         </p>
-                    </div>
-               </div>
-               <div className="album_control">
-                    <button className="album_play_btn">
-                         <div className="inside_btn">
-                              <i className="fa-solid fa-play"></i>
-                              Play
+               <div className="header-info">
+                    <img className='image-bg' src={ playlists.cover }/>
+                    <div className="playlists_banner">
+                         <img className="album_cover" src={ playlists.cover } alt='album_art'/>
+                         <div className="album_info">
+                              <p className="album_type">{ playlists.public }&nbsp; &nbsp;{ playlists.type }</p>
+                              <p className="album_name">{ playlists.name }</p>
+                              <p className="playlist_owner">Created By { playlists.owner }</p>
+                              <p className="album_track_total">
+                                   <span>{ playlists.total } Tracks &nbsp; | &nbsp; { ConvertMs( duration, 1 ) }</span>
+                              </p>
                          </div>
-                    </button>
+                    </div>
+                    <div className="album_control">
+                         <button className="album_play_btn">
+                              <div className="inside_btn">
+                                   <i className="fa-solid fa-play"></i>
+                                   Play
+                              </div>
+                         </button>
+                    </div>
                </div>
                <div className="table">
                     <div className='tr'>
