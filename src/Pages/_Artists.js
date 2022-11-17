@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { useStateProvider } from '../Auth/StateProvider'
+import { useStateProvider } from '../Utils/StateProvider'
 import { NavLink } from 'react-router-dom'
 
 export default function _Artists() {

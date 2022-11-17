@@ -4,8 +4,8 @@ import Nav from "./Nav"
 import Search from "./Search";
 import Navbar from "./Navbar";
 import Profile from "./Profile";
-import { reducerCases } from "../Auth/Const"
-import { useStateProvider } from "../Auth/StateProvider";
+import { reducerCases } from "../Utils/Const"
+import { useStateProvider } from "../Utils/StateProvider";
 import Player from "./Player";
 
 export default function Home() {

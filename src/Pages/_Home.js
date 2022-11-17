@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { reducerCases } from "../Auth/Const"
-import { useStateProvider } from '../Auth/StateProvider'
+import { reducerCases } from "../Utils/Const"
+import { useStateProvider } from '../Utils/StateProvider'
 import AddedDate from '../Helpers/AddedDate'
 import ConvertMs from '../Helpers/ConvertMs'
 

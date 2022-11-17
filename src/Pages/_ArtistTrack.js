@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { reducerCases } from "../Auth/Const"
-import { useStateProvider } from '../Auth/StateProvider'
+import { reducerCases } from "../Utils/Const"
+import { useStateProvider } from '../Utils/StateProvider'
 import ConvertMs from '../Helpers/ConvertMs'
 import { NavLink } from 'react-router-dom'
 

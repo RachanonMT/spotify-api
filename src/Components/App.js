@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import Home from './Home'
 import Login from './Login'
 import '../Styles/styles.css'
-import { reducerCases } from "../Auth/Const"
-import { useStateProvider } from '../Auth/StateProvider'
+import { reducerCases } from "../Utils/Const"
+import { useStateProvider } from '../Utils/StateProvider'
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 
 export default function App() {
