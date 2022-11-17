@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { useStateProvider } from '../Auth/StateProvider'
+import { useStateProvider } from '../Utils/StateProvider'
 
 export default function Profile() {
      const [{ token, device }] = useStateProvider()
