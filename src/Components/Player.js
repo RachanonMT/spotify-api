@@ -152,7 +152,7 @@ export default function Player() {
                {
                     ids: [
                          `${id}`
-                    ]
+                    ],
                },
                {
                     headers: {

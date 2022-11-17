@@ -40,14 +40,14 @@ export default function _PlaylistTrack() {
           const { items } = response.data;
 
           var num = 1
-          items.map(( track ) => {
+          items.map(( track, index ) => {
                setSavedTrack(( savedTrack ) => ([...savedTrack, track.track.id]))
                setDuration(( duration ) => duration + track.track.duration_ms)
                setTracks(tracks => ([...tracks, {
                     playlist: {
                          "context_uri": res.data.uri,
                          "offset": {
-                              "position": num-1
+                              "position": index
                          },
                          "position_ms": 0
                     },
@@ -64,6 +64,12 @@ export default function _PlaylistTrack() {
           })
      };
 
+     const updateLike = ( idx ) => {
+          const newLiked = [...liked];
+          newLiked[ idx ] = !newLiked[ idx ]
+          setLiked( newLiked )
+     }
+
      const getSaved = async () => {
           const id = savedTrack.join(",")
           const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
@@ -72,9 +78,17 @@ export default function _PlaylistTrack() {
                     "Content-Type": "application/json",
                },
           })
-          res.data.map(( like ) => {
-               setLiked(( liked ) => ([...liked, like]))
-          })
+          if(liked.length !== 0){
+               for(let i=0; i<res.data.length; i++){
+                    if(liked[i] != res.data[i]){
+                         updateLike(i)
+                    }
+               }
+          }else{
+               res.data.map(( like ) => {
+                    setLiked(( liked ) => ([...liked, like]))
+               })
+          }
      }
 
      const chooseTrack = (track) => {
@@ -96,7 +110,9 @@ export default function _PlaylistTrack() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
      }
 
      const unlikeTrack = async (id) => {
@@ -108,7 +124,9 @@ export default function _PlaylistTrack() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
      }
 
      const handleLike = (val, id, index) => {

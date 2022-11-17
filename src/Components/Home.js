@@ -9,9 +9,9 @@ import { useStateProvider } from "../Auth/StateProvider";
 import Player from "./Player";
 
 export default function Home() {
-     const [{ searchHistory }, dispatch] = useStateProvider()
-     const [search, setSearch] = useState('')
-     const [input, setInput] = useState('')
+     const [{ searchHistory }, dispatch]          = useStateProvider()
+     const [search, setSearch]                    = useState('')
+     const [input, setInput]                      = useState('')
 
      useEffect(() => {
           setInput('')

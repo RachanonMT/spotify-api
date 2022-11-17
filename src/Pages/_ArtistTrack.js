@@ -78,9 +78,17 @@ export default function _ArtistTrack() {
                     "Content-Type": "application/json",
                },
           })
-          res.data.map(( like ) => {
-               setLiked(( liked ) => ([...liked, like]))
-          })
+          if(liked.length !== 0){
+               for(let i=0; i<res.data.length; i++){
+                    if(liked[i] != res.data[i]){
+                         updateLike(i)
+                    }
+               }
+          }else{
+               res.data.map(( like ) => {
+                    setLiked(( liked ) => ([...liked, like]))
+               })
+          }
      }
 
      const likeTrack = async (id) => {
@@ -114,6 +122,12 @@ export default function _ArtistTrack() {
           setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
           const data = dataTmp
           dispatch({ type: reducerCases.SET_DATA, data })
+     }
+
+     const updateLike = ( idx ) => {
+          const newLiked = [...liked];
+          newLiked[ idx ] = !newLiked[ idx ]
+          setLiked( newLiked )
      }
 
      const handleLike = (val, id, index) => {
