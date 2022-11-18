@@ -13,5 +13,6 @@ export const reducerCases = {
      SET_QUEUE: "SET_QUEUE",
      SET_STATE: "SET_STATE",
      SET_NOW_PLAY: "SET_NOW_PLAY",
+     SET_CREATE: "SET_CREATE",
 };
    

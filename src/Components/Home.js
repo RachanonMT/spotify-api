@@ -9,9 +9,10 @@ import { reducerCases } from "../Utils/Const"
 import { useStateProvider } from "../Utils/StateProvider";
 import Player from "./Player";
 import _Queue from '../Pages/_Queue'
+import _CreatePlaylist from "../Pages/_CreatePlaylist";
 
 export default function Home() {
-     const [{ token, searchHistory, queue, playlist }, dispatch]   = useStateProvider()
+     const [{ token, searchHistory, queue, playlist, toggleCreate }, dispatch]   = useStateProvider()
      const [search, setSearch]                    = useState('')
      const [input, setInput]                      = useState('')
 
@@ -81,6 +82,7 @@ export default function Home() {
                </article>
                <Player/>
                { queue == true && (<_Queue/>)}
+               <_CreatePlaylist/>
           </div>
      )
 }
