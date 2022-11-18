@@ -7,13 +7,13 @@ import AddedDate from '../Helpers/AddedDate'
 import ConvertMs from '../Helpers/ConvertMs'
 
 export default function _Home() {
-     const [{ token, currentPlaying }, dispatch]  = useStateProvider()
+     const [{ token, currentPlaying, data }, dispatch]  = useStateProvider()
      const [tracks, setTracks]                    = useState([])     
      const [albums, setAlbums]                    = useState([])
      const [savedTrack, setSavedTrack]            = useState([])
      const [liked, setLiked]                      = useState([])
      const [seeds, setSeeds]                      = useState([])
-     const [data, setData]                        = useState(0)
+     const [dataTmp, setDataTmp]                  = useState(data)
 
      const getSeeds = async () => {
           setSeeds([])
@@ -74,7 +74,7 @@ export default function _Home() {
      }
     
      const getSaved = async () => {
-          if(savedTrack != []){
+          if(savedTrack.length != 0){
                const id = savedTrack.join(",")
                const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
                     headers: {
@@ -82,10 +82,24 @@ export default function _Home() {
                          "Content-Type": "application/json",
                     },
                })
-               res.data.map(( like ) => {
-                    setLiked(( liked ) => ([...liked, like]))
-               })
+               if(liked.length !== 0){
+                    for(let i=0; i<res.data.length; i++){
+                         if(liked[i] != res.data[i]){
+                              updateLike(i)
+                         }
+                    }
+               }else{
+                    res.data.map(( like ) => {
+                         setLiked(( liked ) => ([...liked, like]))
+                    })
+               }
           }
+     }
+
+     const updateLike = ( idx ) => {
+          const newLiked = [...liked];
+          newLiked[ idx ] = !newLiked[ idx ]
+          setLiked( newLiked )
      }
 
      const likeTrack = async (id) => {
@@ -102,7 +116,9 @@ export default function _Home() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
      }
 
      const unlikeTrack = async (id) => {
@@ -114,7 +130,9 @@ export default function _Home() {
                     },
                }
           )
-          setData(( data ) => data = data + 1)
+          setDataTmp(( dataTmp ) => dataTmp = dataTmp + 1 )
+          const data = dataTmp
+          dispatch({ type: reducerCases.SET_DATA, data })
      }
 
      const handleLike = (val, id, index) => {
@@ -136,6 +154,11 @@ export default function _Home() {
           if(savedTrack.length != 0)
           getSaved()
      }, [data])
+
+     useEffect(() => {
+          if(savedTrack.length != 0)
+          getSaved()
+     }, [liked])
 
      useEffect(() => {
           if(savedTrack.length != 0)

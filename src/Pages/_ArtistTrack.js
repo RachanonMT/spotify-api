@@ -7,28 +7,16 @@ import { NavLink } from 'react-router-dom'
 
 export default function _ArtistTrack() {
      const artistId = new URLSearchParams( window.location.search).get("id" )
-     const [{ token, currentPlaying, data }, dispatch ] = useStateProvider()
+     const [{ token, currentPlaying, data }, dispatch]  = useStateProvider()
      const [ artist, setArtist ]                  = useState([])
      const [ tracks, setTracks ]                  = useState([])
      const [ albums, setAlbums ]                  = useState([])
      const [savedTrack, setSavedTrack]            = useState([])
      const [liked, setLiked]                      = useState([])
-     const [duration, setDuration]                = useState(0)
      const [dataTmp, setDataTmp]                  = useState(data)
 
      const getArtist = async () => {
           setTracks([])
-          const res = await axios.get(`https://api.spotify.com/v1/artists/${artistId}`, {
-               headers: {
-                    Authorization: "Bearer " + token,
-                    "Content-Type": "application/json",
-               },
-          });
-          setArtist({
-               id: res.data.id,
-               name: res.data.name,
-               cover: res.data.images[0].url,
-          })
 
           const response = await axios.get(`https://api.spotify.com/v1/artists/${artistId}/top-tracks?country=th`, {
                headers: {
@@ -42,6 +30,7 @@ export default function _ArtistTrack() {
                     track: {
                          uris: [track.uri],
                          position_ms: 0,
+                         id: track.id,
                     },
                     id: track.id,
                     name: track.name,
@@ -51,6 +40,18 @@ export default function _ArtistTrack() {
                     duration: track.duration_ms,
                     explicit: track.explicit,
                }]))
+          })
+
+          const res = await axios.get(`https://api.spotify.com/v1/artists/${artistId}`, {
+               headers: {
+                    Authorization: "Bearer " + token,
+                    "Content-Type": "application/json",
+               },
+          });
+          setArtist({
+               id: res.data.id,
+               name: res.data.name,
+               cover: res.data.images[0].url,
           })
 
           const resp = await axios.get(`https://api.spotify.com/v1/artists/${artistId}/albums?country=th&limit=10`, {
@@ -71,24 +72,32 @@ export default function _ArtistTrack() {
      };
 
      const getSaved = async () => {
-          const id = savedTrack.join(",")
-          const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
-               headers: {
-                    Authorization: "Bearer " + token,
-                    "Content-Type": "application/json",
-               },
-          })
-          if(liked.length !== 0){
-               for(let i=0; i<res.data.length; i++){
-                    if(liked[i] != res.data[i]){
-                         updateLike(i)
-                    }
-               }
-          }else{
-               res.data.map(( like ) => {
-                    setLiked(( liked ) => ([...liked, like]))
+          if(savedTrack.length != 0){
+               const id = savedTrack.join(",")
+               const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
                })
+               if(liked.length !== 0){
+                    for(let i=0; i<res.data.length; i++){
+                         if(liked[i] != res.data[i]){
+                              updateLike(i)
+                         }
+                    }
+               }else{
+                    res.data.map(( like ) => {
+                         setLiked(( liked ) => ([...liked, like]))
+                    })
+               }
           }
+     }
+
+     const updateLike = ( idx ) => {
+          const newLiked = [...liked];
+          newLiked[ idx ] = !newLiked[ idx ]
+          setLiked( newLiked )
      }
 
      const likeTrack = async (id) => {
@@ -124,12 +133,6 @@ export default function _ArtistTrack() {
           dispatch({ type: reducerCases.SET_DATA, data })
      }
 
-     const updateLike = ( idx ) => {
-          const newLiked = [...liked];
-          newLiked[ idx ] = !newLiked[ idx ]
-          setLiked( newLiked )
-     }
-
      const handleLike = (val, id, index) => {
           if(val == true){
                unlikeTrack(id)
@@ -149,6 +152,11 @@ export default function _ArtistTrack() {
           if(savedTrack.length != 0)
           getSaved()
      }, [data])
+
+     useEffect(() => {
+          if(savedTrack.length != 0)
+          getSaved()
+     }, [liked])
 
      useEffect(() => {
           if(savedTrack.length != 0)

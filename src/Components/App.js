@@ -27,7 +27,7 @@ export default function App() {
                               const device = new window.Spotify.Player({
                                    name: 'Web Player',
                                    getOAuthToken: cb => { cb(token); },
-                                   volume: 0.5
+                                   volume: 0.3
                               });
                          
                               device.addListener('ready', ({ device_id }) => {

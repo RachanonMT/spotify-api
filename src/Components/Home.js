@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { NavLink } from 'react-router-dom';
+import axios from "axios";
 import Nav from "./Nav"
 import Search from "./Search";
 import Navbar from "./Navbar";
@@ -7,11 +8,25 @@ import Profile from "./Profile";
 import { reducerCases } from "../Utils/Const"
 import { useStateProvider } from "../Utils/StateProvider";
 import Player from "./Player";
+import _Queue from '../Pages/_Queue'
 
 export default function Home() {
-     const [{ searchHistory }, dispatch]          = useStateProvider()
+     const [{ token, searchHistory, queue, playlist }, dispatch]   = useStateProvider()
      const [search, setSearch]                    = useState('')
      const [input, setInput]                      = useState('')
+
+     document.addEventListener('contextmenu', event => event.preventDefault());
+
+     const getPlaylists = async () => {
+          const response = await axios.get(`https://api.spotify.com/v1/me/playlists`, {
+               headers: {
+                    Authorization: "Bearer " + token,
+                    "Content-Type": "application/json",
+               },
+          });
+          const playlist = response.data.items;
+          dispatch({ type: reducerCases.SET_PLAYLIST, playlist })
+     };
 
      useEffect(() => {
           setInput('')
@@ -27,10 +42,16 @@ export default function Home() {
           return () => clearTimeout(searchDelay)
      }, [input, dispatch, searchHistory])
 
+     useEffect(() => {
+          getPlaylists()
+     }, [])
+
+
      return (
           <div className="container">
                <header className="header">
                     <div className="logo">
+                         
                     </div>
                     <label htmlFor="search" className="search-frame">
                          <div className="search-box">
@@ -59,6 +80,7 @@ export default function Home() {
                     </div>
                </article>
                <Player/>
+               { queue == true && (<_Queue/>)}
           </div>
      )
 }

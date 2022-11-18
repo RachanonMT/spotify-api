@@ -6,13 +6,13 @@ import ConvertMs from '../Helpers/ConvertMs'
 
 export default function _PlaylistTrack() {
      const playlistId = new URLSearchParams(window.location.search).get("id")
-     const [{ token, currentPlaying }, dispatch]  = useStateProvider()
+     const [{ token, currentPlaying, data }, dispatch]  = useStateProvider()
      const [tracks, setTracks]                    = useState([])
      const [savedTrack, setSavedTrack]            = useState([])
      const [liked, setLiked]                      = useState([])
      const [playlists, setPlaylists]              = useState([])
      const [duration, setDuration]                = useState(0)
-     const [data, setData]                        = useState(0)
+     const [dataTmp, setDataTmp]                  = useState(data)
  
      const getPlaylists = async () => {
           const res = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}`, {
@@ -49,7 +49,8 @@ export default function _PlaylistTrack() {
                          "offset": {
                               "position": index
                          },
-                         "position_ms": 0
+                         "position_ms": 0,
+                         id: track.track.id,
                     },
                     no: num++,
                     id: track.track.id,
@@ -64,36 +65,33 @@ export default function _PlaylistTrack() {
           })
      };
 
+     const getSaved = async () => {
+          if(savedTrack.length != 0){
+               const id = savedTrack.join(",")
+               const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               })
+               if(liked.length !== 0){
+                    for(let i=0; i<res.data.length; i++){
+                         if(liked[i] != res.data[i]){
+                              updateLike(i)
+                         }
+                    }
+               }else{
+                    res.data.map(( like ) => {
+                         setLiked(( liked ) => ([...liked, like]))
+                    })
+               }
+          }
+     }
+
      const updateLike = ( idx ) => {
           const newLiked = [...liked];
           newLiked[ idx ] = !newLiked[ idx ]
           setLiked( newLiked )
-     }
-
-     const getSaved = async () => {
-          const id = savedTrack.join(",")
-          const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
-               headers: {
-                    Authorization: "Bearer " + token,
-                    "Content-Type": "application/json",
-               },
-          })
-          if(liked.length !== 0){
-               for(let i=0; i<res.data.length; i++){
-                    if(liked[i] != res.data[i]){
-                         updateLike(i)
-                    }
-               }
-          }else{
-               res.data.map(( like ) => {
-                    setLiked(( liked ) => ([...liked, like]))
-               })
-          }
-     }
-
-     const chooseTrack = (track) => {
-          const currentPlaying = track
-          dispatch({ type: reducerCases.SET_PLAYING, currentPlaying })
      }
 
      const likeTrack = async (id) => {
@@ -139,6 +137,11 @@ export default function _PlaylistTrack() {
           }
      }
 
+     const chooseTrack = (track) => {
+          const currentPlaying = track
+          dispatch({ type: reducerCases.SET_PLAYING, currentPlaying })
+     }
+
      useEffect(() => {
           if(savedTrack.length != 0)
           getSaved()
@@ -146,7 +149,12 @@ export default function _PlaylistTrack() {
 
      useEffect(() => {
           if(savedTrack.length != 0)
-               getSaved()
+          getSaved()
+     }, [liked])
+
+     useEffect(() => {
+          if(savedTrack.length != 0)
+          getSaved()
      }, [savedTrack])
      
      useEffect(() => {

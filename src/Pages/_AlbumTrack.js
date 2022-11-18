@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { reducerCases } from "../Utils/Const"
 import { useStateProvider } from '../Utils/StateProvider'
@@ -6,7 +6,7 @@ import ConvertMs from '../Helpers/ConvertMs'
 
 export default function _AlbumTrack() {
      const albumId = new URLSearchParams(window.location.search).get("id")
-     const [{ token, currentPlaying, data }, dispatch]  = useStateProvider()
+     const [{ token, currentPlaying, data, deviceId, playlist }, dispatch]  = useStateProvider()
      const [tracks, setTracks]                    = useState([])
      const [albums, setAlbums]                    = useState([])
      const [savedTrack, setSavedTrack]            = useState([])
@@ -60,6 +60,7 @@ export default function _AlbumTrack() {
                     artists: track.artists.map(( artist ) => artist.name),
                     duration: ConvertMs(track.duration_ms, 0),
                     explicit: track.explicit,
+                    uri: track.uri,
                }]))
           })
      };
@@ -141,6 +142,81 @@ export default function _AlbumTrack() {
           dispatch({ type: reducerCases.SET_PLAYING, currentPlaying })
      }
 
+     const addQueue = async (id) => {
+          await axios.post(`https://api.spotify.com/v1/me/player/queue?uri=${id}&device_id=${deviceId}`,
+               {
+
+               },
+               {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               }
+          )
+     }
+
+     const addToPlaylist = async (playlistId, trackUri) => {
+          await axios.post(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?uris=${trackUri}`,
+               {
+
+               },
+               {
+                    headers: {
+                         Authorization: "Bearer " + token,
+                         "Content-Type": "application/json",
+                    },
+               }
+          )
+     }
+
+     const content = document.getElementsByClassName("content")
+
+
+     function hide(){
+          window.onclick = () => {
+               const allPopup = document.getElementsByClassName('popup')
+               for(let i=0; i<allPopup.length; i++){
+                    allPopup[i].style.display = "none"
+               }
+               content[0].onscroll = function() {}
+          }
+     }
+
+     const handleLeftClick = (event, index) => {
+          const scrollTop = content[0].scrollTop
+          const popup = document.getElementById(index)
+          const sub = document.getElementById("popup"+index)
+          const allPopup = document.getElementsByClassName('popup')
+          const row = document.getElementById("tr"+index).getBoundingClientRect();
+          for(let i=0; i<allPopup.length; i++){
+               allPopup[i].style.display = "none"
+          }
+          if(event.buttons === 2){
+               if((event.clientX - row.left) + 550 > window.innerWidth){
+                    sub.style.left = "-230px"
+                    popup.style.left = `${event.clientX - row.left - 220 -10}px`
+               }else{
+                    popup.style.left = `${event.clientX - row.left + 10}px`
+                    if(event.clientX - row.left < 480){
+                         sub.style.left = "195px"
+                    }
+               }
+               if((event.clientY * 2) + 160 > window.innerHeight && event.clientY < 450){
+                    popup.style.top = `${event.clientY - row.top - 170}px`
+               }else if(event.clientY + 430 > window.innerHeight) {
+                    popup.style.top = `${event.clientY - row.top - 340}px`
+               }else{
+                    popup.style.top = `${event.clientY - row.top}px`
+               }
+               popup.style.display = "block"
+               content[0].onscroll = function() {
+                    content[0].scrollTo(0, scrollTop);
+               }
+          }
+          hide()
+     }
+
      useEffect(() => {
           if(savedTrack.length != 0)
           getSaved()
@@ -157,6 +233,7 @@ export default function _AlbumTrack() {
      }, [savedTrack])
 
      useEffect(() => {
+          content[0].onscroll = function() {}
           getAlbums()
      }, [])
 
@@ -200,10 +277,10 @@ export default function _AlbumTrack() {
                     <div className='table_body'>
                          {tracks.map(( val, i ) => {
                               return (
-                                   <div className='tr' key={ val.id } onDoubleClick={() => { chooseTrack( val.album ) }}>
+                                   <div className='tr relative' key={ val.id } id={`tr`+i} onDoubleClick={() => { chooseTrack( val.album ) }} onMouseDown={(e) => handleLeftClick(e, i)}>
                                         <div className="num td">
                                              <span>{ val.no }</span>
-                                             <i className="fa-solid fa-play play-track" onClick={() => {chooseTrack(val.album)}}/>     
+                                             <i className="fa-solid fa-play play-track" onClick={() => {chooseTrack( val.album )}}/>     
                                         </div>
                                         <div className="title td">{ val.name }</div>
                                         <div className="artist td">
@@ -216,6 +293,43 @@ export default function _AlbumTrack() {
                                              <i className={liked[i]? "fa-solid fa-heart hearted":"fa-regular fa-heart"} onClick={() => {
                                                   handleLike(liked[i], val.id, i)
                                              }} />
+                                        </div>
+                                        <div className='popup' id={i} >
+                                             <div className='flex'> 
+                                                  <div className='popup-image'>
+                                                       <img src={albums.cover} />
+                                                  </div>
+                                                  <div className='popup-info'>
+                                                       <p className='name'>{val.name}</p>
+                                                       <p className='artist'>{val.artists.join(", ")}</p>
+                                                  </div>
+                                             </div>
+                                             <div className='popup-btn' onMouseDown={() => {chooseTrack( val.album )}}>Play Now</div>
+                                             <div className='popup-btn' onMouseDown={() => addQueue(val.uri)}>Add To Queue</div>
+                                             <hr className='hr'/>
+                                             <div className='popup-btn relative popup-playlist-btn'>
+                                                  <span>Add To Playlist</span>
+                                                  <i class="fa-solid fa-chevron-right more"></i>
+                                                  <div className='popup-playlist' id={"popup"+i}>
+                                                       <div className='popup-content'>
+                                                            <div className='popup-btn flex'>
+                                                                 <i className="fa-solid fa-circle-plus"></i>
+                                                                 <p>Create New Playlist</p>
+                                                            </div>
+                                                            <hr className='hr'/>
+                                                            {playlist.map(( playlist, i ) => {
+                                                                 return (
+                                                                      <div className='popup-btn' key={i} onMouseDown={() => addToPlaylist(playlist.id, val.uri)}>{playlist.name}</div>
+                                                                 )
+                                                            })}
+                                                       </div>
+                                                  </div>
+                                             </div>
+                                             <div className='popup-btn'>Add To Library</div>
+                                             <hr className='hr'/>
+                                             <div className='popup-btn'>Go To Artist</div>
+                                             <div className='popup-btn'>Credits</div>
+                                             <div className='popup-btn'>Share</div>
                                         </div>
                                    </div>
                               )

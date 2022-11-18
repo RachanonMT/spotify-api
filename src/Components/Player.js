@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { reducerCases } from "../Utils/Const"
 import { useStateProvider } from '../Utils/StateProvider'
 import ConvertMs from '../Helpers/ConvertMs'
 
 export default function Player() {
-     const [{ token, deviceId, currentPlaying, device, data }, dispatch] = useStateProvider()
+     const [{ token, deviceId, currentPlaying, device, data, queue, state, nowPlaying }, dispatch] = useStateProvider()
      const [paused, setPaused]                    = useState(true)
      const [time, setTime]                        = useState(0)
      const [tmp, setTmp]                          = useState(0)
@@ -18,15 +18,15 @@ export default function Player() {
      const [liked, setLiked]                      = useState()
      const [savedTrack, setSavedTrack]            = useState([])
      const [dataTmp, setDataTmp]                  = useState(data)
+     const [check, setCheck]                      = useState("")
      const [trackInfo, setTrackInfo]              = useState({
-          status: false,
-          name: '',
-          cover: '',
-          artist: [{}],
-          duration: 0,
-     })
-
-     const [check, setCheck] = useState("")
+                                                       status: false,
+                                                       name: '',
+                                                       cover: '',
+                                                       artist: [{}],
+                                                       duration: 0,
+                                                  })
+     const wrapRef                                = useRef(null);
 
      const playTrack =  async () => {
           if(deviceId != ''){
@@ -43,8 +43,11 @@ export default function Player() {
      }
 
      const handlePause = () => {
-          if(currentPlaying !== null)
+          if (currentPlaying !== null)
           device.getCurrentState().then( state => { 
+               if (!state) {
+                    return;
+               }
                setTime(state.position)
                setVolume(device._options.volume * 100)
                setPaused(state.paused)
@@ -53,6 +56,7 @@ export default function Player() {
                     id: state.track_window.current_track.id,
                     name: state.track_window.current_track.name,
                     cover: state.track_window.current_track.album.images[2].url,
+                    album: state.track_window.current_track.album.name,
                     artist: state.track_window.current_track.artists.map((val) => ({
                          name: val.name,
                          url: val.url
@@ -83,19 +87,20 @@ export default function Player() {
      }
 
      const playVolume =  async (val) => {
-          await axios.put(`https://api.spotify.com/v1/me/player/volume?device_id=${deviceId}&volume_percent=${val}`, 
-               {
-               },
-               {
-                    headers: {
-                         Authorization: "Bearer " + token,
-                         "Content-Type": "application/json",
-               }
+          device.setVolume(val/100).then(() => {
+               axios.put(`https://api.spotify.com/v1/me/player/volume?device_id=${deviceId}&volume_percent=${val}`, 
+                    {
+                    },
+                    {
+                         headers: {
+                              Authorization: "Bearer " + token,
+                              "Content-Type": "application/json",
+                    }
+               })
           })
      }
 
      const getDevice = async () => {
-          setCheck("")
           const res = await axios.get(`https://api.spotify.com/v1/me/player/devices`, {
                headers: {
                     Authorization: "Bearer " + token,
@@ -203,14 +208,41 @@ export default function Player() {
           }
      } 
 
-     window.addEventListener("click", (event) => {
-          const Element = document.querySelector(".speaker");
-          if (event.target.className != Element.className) {
-               if(openDevice == true){
-                    setOpenDevice(false)
+     const handleQueue = () => {
+          if (queue == false) {
+               const queue = true
+               dispatch({ type: reducerCases.SET_QUEUE, queue })
+          }else{
+               const queue = false
+               dispatch({ type: reducerCases.SET_QUEUE, queue })
+          }
+     }
+
+     const _hideQueue = (ref) => {
+          useEffect(() => {
+               const handleClickOutside = (event) => {
+                    if (ref.current && !ref.current.contains(event.target) && event.path[0].className !== "speaker bi bi-speaker-fill") {
+                         setOpenDevice(false)
+                    }
                }
-          } 
-     });
+               document.addEventListener("mousedown", handleClickOutside);
+               return () => {
+                    document.removeEventListener("mousedown", handleClickOutside);
+               };
+          }, [ref]);
+     }
+
+     _hideQueue(wrapRef);
+
+     useEffect(() => {
+          const nowPlaying = trackInfo.name
+          dispatch({ type: reducerCases.SET_NOW_PLAY, nowPlaying })
+     }, [trackInfo.name])
+
+     useEffect(() => {
+          const state = paused
+          dispatch({ type: reducerCases.SET_STATE, state })
+     }, [paused])
 
      useEffect(() => {
           if(currentPlaying !== null){
@@ -267,7 +299,7 @@ export default function Player() {
                               }
                          </p>
                          <p className='artist'>{trackInfo.artist[0].name}</p>
-                         <p className='from'>{trackInfo.status?'PLAYING FROM : TRACKS':""}</p>
+                         <p className='from'>{trackInfo.album}</p>
                     </div>    
                </div>
 
@@ -317,9 +349,9 @@ export default function Player() {
                     <div></div>
                     <div className='device flex'>
                          <i className="fa-solid fa-sort-up full"></i>
-                         <i className="fa-solid fa-bars queue"></i>
+                         <i className="fa-solid fa-bars queue" onClick={handleQueue}></i>
                          <i className="speaker bi bi-speaker-fill" onClick={() => {handleDevice()}}></i>
-                         {openDevice == true && (<div className='device-show'>
+                         {openDevice == true && (<div className='device-show' ref={wrapRef}>
                               {availableDevice.map(( val ) => {
                                    if(val.is_active == true){
                                         val = 0

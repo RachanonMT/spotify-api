@@ -6,6 +6,10 @@ export const initialState = {
      deviceId: '',
      device: null,
      data: 0,
+     queue: false,
+     state: false,
+     nowPlaying: "",
+     playlist: null,
 };
 
 const reducer = (state, action) => {
@@ -34,6 +38,26 @@ const reducer = (state, action) => {
                return {
                     ...state,
                     data: action.data,
+               };
+          case reducerCases.SET_QUEUE:
+               return {
+                    ...state,
+                    queue: action.queue,
+               };
+          case reducerCases.SET_STATE:
+               return {
+                    ...state,
+                    state: action.state,
+               };
+          case reducerCases.SET_NOW_PLAY:
+               return {
+                    ...state,
+                    nowPlaying: action.nowPlaying,
+               };
+          case reducerCases.SET_PLAYLIST:
+               return {
+                    ...state,
+                    playlist: action.playlist,
                };
           default:
                return state;
