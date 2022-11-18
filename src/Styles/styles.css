@@ -12,6 +12,9 @@ p, span {
 html, body .container {
      background: #000;
      font-family: 'Poppins';
+     -webkit-user-select: none; /* Safari */
+     -ms-user-select: none; /* IE 10 and IE 11 */
+     user-select: none; /* Standard syntax */
 }
 
 a {
@@ -124,7 +127,7 @@ a {
 }
 
 .logout .logout_btn:hover {
-     background: #494949;
+     background: #181818;
      color: #FF0000dd;
 }
 
@@ -135,14 +138,14 @@ a {
 
 .article {
      display: flex;
-     background: #181818;
+     background: #161616;
      height: calc(100vh - 160px);
      border-radius: 12px;
 }
 
 .sidebar {
      width: 20%;
-     background: #222222;
+     background: #202020;
      height: calc(100vh - 180px);
      margin-top: 10px;
      margin-left: 10px;
@@ -171,7 +174,7 @@ a {
 
 .content {
      width: 100%;
-     background: #222222;
+     background: #202020;
      height: calc(100vh - 180px);
      margin-top: 10px;
      margin-left: 10px;
@@ -1500,7 +1503,7 @@ html {
      bottom: 40px;
      left: 0px;
      width: 200px;
-     background: #494949;
+     background: #323232;
      border-radius: 8px;
      padding: 10px;
 }
@@ -1636,7 +1639,7 @@ html {
      z-index: 99;
      width: 300px;
      height: calc(100vh - 210px);
-     background: #303030;
+     background: #2a2a2a;
      border-radius: 8px;
      overflow-y: auto;
      padding: 10px;
@@ -1659,7 +1662,7 @@ html {
 }
 
 .queue_show .queue-track:hover {
-     background: #252525;
+     background: #202020;
 }
 
 .queue_show .queue-track .queue-info{
@@ -1671,7 +1674,7 @@ html {
 }
 
 .queue_show .queue-track .now-playing img {
-     filter: brightness(0.3);
+     filter: brightness(0.5);
 }
 
 .queue_show .queue-track .queue-info .queue-name {
@@ -1767,15 +1770,14 @@ html {
 }
 
 .queue-track:hover img {
-     opacity: 0.3;
+     opacity: 0.4;
 }
 
 /*--------### Popup --------*/
 .popup {
      position: absolute;
      width: 200px;
-     height: 320px;
-     background: #252525;
+     background: #282828;
      display: none;
      z-index: 99;
      border-radius: 8px;
@@ -1828,7 +1830,7 @@ html {
 }
 
 .popup-btn:hover {
-     background: #343434;
+     background: #373737;
 }
 
 .popup .hr {
@@ -1842,6 +1844,22 @@ html {
      display: block;
 }
 
+.popup-artist-btn:hover .popup-artist {
+     display: block;
+}
+
+.popup .popup-artist {
+     top: -25px;
+     bottom: unset;
+     left: 200px;
+     background: none;
+     position: absolute;
+     z-index: 99;
+     display: none;
+     transition: 0.5s;
+     padding-right: 20px;
+}
+
 .popup .popup-playlist {
      top: -50px;
      bottom: unset;
@@ -1851,6 +1869,7 @@ html {
      z-index: 99;
      display: none;
      transition: 0.5s;
+     padding-right: 20px;
 }
 
 .popup .popup-playlist:hover {
@@ -1860,7 +1879,7 @@ html {
 .popup .more {
      position: absolute;
      right: 10px;
-     top: 7.5px;
+     top: 8px;
 }
 
 .popup .popup-playlist .popup-content {
@@ -1869,7 +1888,17 @@ html {
      padding: 7px;
      width: 180px;
      border-radius: 7px;
-     background: #252525;
+     background: #282828;
+     box-shadow: rgba(00, 00, 00, 0.12) 0px 4px 4px 0px, rgba(00, 00, 00, 0.32) 0px 0px 8px 2px;
+}
+
+.popup .popup-artist .popup-content {
+     color: #FFF;
+     margin-left: 20px;
+     padding: 7px;
+     width: 180px;
+     border-radius: 7px;
+     background: #282828;
      box-shadow: rgba(00, 00, 00, 0.12) 0px 4px 4px 0px, rgba(00, 00, 00, 0.32) 0px 0px 8px 2px;
 }
 
@@ -1881,4 +1910,14 @@ html {
 
 .popup .popup-playlist .popup-content p {
      margin: 3px;
+}
+
+.link-btn {
+     display: inline-block;
+     width: 185px;
+}
+
+.popup-content .link-btn {
+     display: inline-block;
+     width: 165px;
 }

@@ -3,6 +3,7 @@ import axios from 'axios'
 import { reducerCases } from "../Utils/Const"
 import { useStateProvider } from '../Utils/StateProvider'
 import ConvertMs from '../Helpers/ConvertMs'
+import { NavLink } from 'react-router-dom'
 
 export default function _AlbumTrack() {
      const albumId = new URLSearchParams(window.location.search).get("id")
@@ -58,9 +59,11 @@ export default function _AlbumTrack() {
                     id: track.id,
                     name: track.name,
                     artists: track.artists.map(( artist ) => artist.name),
+                    artistId: track.artists.map(( artist ) => artist.id),
                     duration: ConvertMs(track.duration_ms, 0),
                     explicit: track.explicit,
                     uri: track.uri,
+                    url: track.external_urls.spotify,
                }]))
           })
      };
@@ -172,9 +175,8 @@ export default function _AlbumTrack() {
 
      const content = document.getElementsByClassName("content")
 
-
      function hide(){
-          window.onclick = () => {
+          window.onclick = (e) => {
                const allPopup = document.getElementsByClassName('popup')
                for(let i=0; i<allPopup.length; i++){
                     allPopup[i].style.display = "none"
@@ -186,26 +188,31 @@ export default function _AlbumTrack() {
      const handleLeftClick = (event, index) => {
           const scrollTop = content[0].scrollTop
           const popup = document.getElementById(index)
-          const sub = document.getElementById("popup"+index)
+          const playlist = document.getElementById("popup"+index)
+          const artist = document.getElementById("artist"+index)
           const allPopup = document.getElementsByClassName('popup')
           const row = document.getElementById("tr"+index).getBoundingClientRect();
-          for(let i=0; i<allPopup.length; i++){
-               allPopup[i].style.display = "none"
-          }
           if(event.buttons === 2){
+               for(let i=0; i<allPopup.length; i++){
+                    allPopup[i].style.display = "none"
+               }
                if((event.clientX - row.left) + 550 > window.innerWidth){
-                    sub.style.left = "-230px"
+                    playlist.style.left = "-230px"
+                    if(artist)
+                    artist.style.left = "-230px"
                     popup.style.left = `${event.clientX - row.left - 220 -10}px`
                }else{
                     popup.style.left = `${event.clientX - row.left + 10}px`
                     if(event.clientX - row.left < 480){
-                         sub.style.left = "195px"
+                         playlist.style.left = "195px"
+                         if(artist)
+                         artist.style.left = "195px"
                     }
                }
                if((event.clientY * 2) + 160 > window.innerHeight && event.clientY < 450){
-                    popup.style.top = `${event.clientY - row.top - 170}px`
+                    popup.style.top = `${event.clientY - row.top - 150}px`
                }else if(event.clientY + 430 > window.innerHeight) {
-                    popup.style.top = `${event.clientY - row.top - 340}px`
+                    popup.style.top = `${event.clientY - row.top - 300}px`
                }else{
                     popup.style.top = `${event.clientY - row.top}px`
                }
@@ -213,8 +220,8 @@ export default function _AlbumTrack() {
                content[0].onscroll = function() {
                     content[0].scrollTo(0, scrollTop);
                }
+               hide()
           }
-          hide()
      }
 
      useEffect(() => {
@@ -309,7 +316,7 @@ export default function _AlbumTrack() {
                                              <hr className='hr'/>
                                              <div className='popup-btn relative popup-playlist-btn'>
                                                   <span>Add To Playlist</span>
-                                                  <i class="fa-solid fa-chevron-right more"></i>
+                                                  <i className="fa-solid fa-chevron-right more"></i>
                                                   <div className='popup-playlist' id={"popup"+i}>
                                                        <div className='popup-content'>
                                                             <div className='popup-btn flex'>
@@ -325,11 +332,23 @@ export default function _AlbumTrack() {
                                                        </div>
                                                   </div>
                                              </div>
-                                             <div className='popup-btn'>Add To Library</div>
+                                             <div className='popup-btn' onClick={() => {handleLike(liked[i], val.id, i)}}>{liked[i]? "Remove From Library":"Add To Library"}</div>
                                              <hr className='hr'/>
-                                             <div className='popup-btn'>Go To Artist</div>
-                                             <div className='popup-btn'>Credits</div>
-                                             <div className='popup-btn'>Share</div>
+                                             {(val.artistId.length == 1) && (<NavLink className='popup-btn link-btn' to={`/me/artist/?id=${val.artistId}`}>Go To Artist</NavLink>)}
+                                             {(val.artistId.length > 1) && (<div className='popup-btn relative popup-artist-btn'>
+                                                  <span>Go To Artists</span>
+                                                  <i className="fa-solid fa-chevron-right more"></i>
+                                                  <div className='popup-artist' id={"artist"+i}>
+                                                       <div className='popup-content'>
+                                                            {val.artistId.map(( artist, index ) => {
+                                                                 return (
+                                                                      <NavLink className='popup-btn link-btn' to={`/me/artist/?id=${artist}`}>{val.artists[index]}</NavLink>
+                                                                 )
+                                                            })}
+                                                       </div>
+                                                  </div>
+                                             </div>)}
+                                             <div className='popup-btn' onMouseDown={() => {navigator.clipboard.writeText(val.url)}} >Share</div>
                                         </div>
                                    </div>
                               )
