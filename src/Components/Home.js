@@ -45,7 +45,7 @@ export default function Home() {
 
      useEffect(() => {
           getPlaylists()
-     }, [])
+     }, [toggleCreate])
 
 
      return (

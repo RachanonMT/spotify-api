@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { reducerCases } from "../Utils/Const"
 import { useStateProvider } from '../Utils/StateProvider'
 import ConvertMs from '../Helpers/ConvertMs'
 import { NavLink } from 'react-router-dom'
+import _ListTrack from '../Pages/_ListTrack'
 
 export default function Search({query, setSearch}) {
-     const [{ token, currentPlaying }, dispatch]  = useStateProvider()
+     const [{ token, currentPlaying }]  = useStateProvider()
      const [tracks, setTracks]                    = useState([])
      const [albums, setAlbums]                    = useState([])
      const [savedTrack, setSavedTrack]            = useState([])
-     const [liked, setLiked]                      = useState([])
      const [artists, setArtists]                  = useState([])
 
      const getTracks = async () => {
@@ -30,13 +29,13 @@ export default function Search({query, setSearch}) {
                     },
                     id: track.id,
                     name: track.name,
-                    cover: track.album.images[0]?.url,
-                    artist: track.artists?.map((val) => ({
-                         id: val.id,
-                         name: val.name,
-                    })),
+                    image: track.album.images[0]?.url,
+                    artist: track.artists.map((artist) => artist.name),
+                    artistId: track.artists.map(( artist ) => artist.id),
                     explicit: track.explicit,
-                    duration: ConvertMs(track.duration_ms)
+                    duration: ConvertMs(track.duration_ms),
+                    uri: track.uri,
+                    url: track.external_urls.spotify,
                }]))
           })
      };
@@ -80,34 +79,12 @@ export default function Search({query, setSearch}) {
           })
      };
 
-     const getSaved = async () => {
-          const id = savedTrack.join(",")
-          const res = await axios.get(`https://api.spotify.com/v1/me/tracks/contains?ids=${id}`, {
-               headers: {
-                    Authorization: "Bearer " + token,
-                    "Content-Type": "application/json",
-               },
-          })
-          res.data.map(( like ) => {
-               setLiked(( liked ) => ([...liked, like]))
-          })
-     }
 
      const handleClick = () => {
           setSearch('')
      }
 
-     const chooseTrack = (track) => {
-          const currentPlaying = track
-          dispatch({ type: reducerCases.SET_PLAYING, currentPlaying })
-     }
-
      useEffect(() => {
-          getSaved()
-     }, [savedTrack])
-
-     useEffect(() => {
-          setLiked([])
           setTracks([])
           setAlbums([])
           setArtists([])
@@ -130,31 +107,7 @@ export default function Search({query, setSearch}) {
                               </div>
                          </NavLink>
                     </div>
-                    <div className='search_track'>
-                         <p className='search_title'>Tracks</p>
-                         <div className='search_track_row'>
-                              {tracks.map(( val, i ) => {
-                                   return (
-                                        <div className='tr' key={val.id} onClick={() => {chooseTrack(val.track)}}>
-                                             <div className="cover td relative">
-                                                  <i className="fa-solid fa-play play-track" onClick={() => {chooseTrack(val.track)}}/>
-                                                  <img src={val.cover} alt="cover"/>
-                                             </div>
-                                             <div className="title td">{val.name}
-                                                  {val.explicit === true &&
-                                                       <span className="explicit_tag">E</span>
-                                                  }
-                                                  <p className='artist'>{val.artist[0].name}</p>
-                                             </div>
-                                             <div className="time td">{val.duration}</div>
-                                             <div className="track_btn td">
-                                                  <i className={liked[i]? "fa-solid fa-heart hearted":"fa-regular fa-heart"}/>
-                                             </div>
-                                        </div>
-                                   )
-                              })}
-                         </div>
-                    </div>
+                    <_ListTrack tracks={tracks} savedTrack={savedTrack} type={5}/>
                </div>
                <div className='album_search'>
                     <p className='search_title'>Albums</p>
