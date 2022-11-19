@@ -4,6 +4,7 @@ import { reducerCases } from "../Utils/Const"
 import { useStateProvider } from '../Utils/StateProvider'
 import ConvertMs from '../Helpers/ConvertMs'
 import { NavLink } from 'react-router-dom'
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 export default function _AlbumTrack() {
      const albumId = new URLSearchParams(window.location.search).get("id")
@@ -247,9 +248,9 @@ export default function _AlbumTrack() {
      return (
           <div className='albums'>
                <div className="header-info">
-                    <img className='image-bg' src={albums.cover}/>
+                    <LazyLoadImage effect="blur" className='image-bg' src={albums.cover} loading="lazy"/>
                     <div className="playlists_banner">
-                         <img className="album_cover" src={ albums.cover } alt='album_art'/>
+                         <LazyLoadImage effect="blur" className="album_cover" src={ albums.cover } loading="lazy"/>
                          <div className="album_info">
                               <p className="album_type">{ albums.type }</p>
                               <p className="album_name">{ albums.name }</p>
@@ -265,7 +266,7 @@ export default function _AlbumTrack() {
                          </div>
                     </div>
                     <div className="album_control">
-                         <button className="album_play_btn">
+                         <button className="album_play_btn" onClick={() => {chooseTrack( tracks[0].album )}}>
                               <div className="inside_btn">
                                    <i className="fa-solid fa-play"></i>
                                    Play
@@ -321,7 +322,7 @@ export default function _AlbumTrack() {
                                                        <div className='popup-content'>
                                                             <div className='popup-btn flex'>
                                                                  <i className="fa-solid fa-circle-plus"></i>
-                                                                 <p>Create New Playlist</p>
+                                                                 <p onClick={() => {const toggleCreate = true; dispatch({ type: reducerCases.SET_CREATE, toggleCreate })}}>Create New Playlist</p>
                                                             </div>
                                                             <hr className='hr'/>
                                                             {playlist.map(( playlist, i ) => {
@@ -342,7 +343,7 @@ export default function _AlbumTrack() {
                                                        <div className='popup-content'>
                                                             {val.artistId.map(( artist, index ) => {
                                                                  return (
-                                                                      <NavLink className='popup-btn link-btn' to={`/me/artist/?id=${artist}`}>{val.artists[index]}</NavLink>
+                                                                      <NavLink className='popup-btn link-btn' key={index} to={`/me/artist/?id=${artist}`}>{val.artists[index]}</NavLink>
                                                                  )
                                                             })}
                                                        </div>

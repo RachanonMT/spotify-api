@@ -1,10 +1,11 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { reducerCases } from "../Utils/Const"
 import { useStateProvider } from '../Utils/StateProvider'
 
 export default function Profile() {
-     const [{ token, device }] = useStateProvider()
+     const [{ token, device, userId }, dispatch] = useStateProvider()
      const [user, setUser] = useState([])
      const [profile, setProfile] = useState(false)
 
@@ -19,6 +20,8 @@ export default function Profile() {
                image: res.data.images[0].url,
                name: res.data.display_name,
           })
+          const userId = res.data.id
+          dispatch({ type: reducerCases.SET_USER, userId })
      }
 
      const handleLogout = () => {
@@ -34,8 +37,7 @@ export default function Profile() {
      }
 
      window.addEventListener("click", (event) => {
-          const Element = document.querySelector(".profile_btn");
-          if (event.target.className != Element.className && event.target.className != 'find') {
+          if (event.target.className != profile_btn.className && event.target.className != 'find') {
                if(profile == true){
                     setProfile(false)
                }
@@ -48,7 +50,7 @@ export default function Profile() {
      
      return (
           <div className='find'>
-               <div className='profile_btn' onClick={() => {handleProfile()}}>
+               <div className='profile_btn' id='profile_btn' onClick={() => {handleProfile()}}>
                     <img className='find' src={user.image} alt='user'/>
                </div>
                {(profile === true) && (<div className='logout'> 

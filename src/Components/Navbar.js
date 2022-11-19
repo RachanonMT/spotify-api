@@ -28,6 +28,7 @@ export default function Navbar({setSearch}) {
                <hr className='group'/>
                <p className='nav-title'>MY PLAYLISTS</p>
                <NavLink onClick={() => {setSearch(''); const toggleCreate = true; dispatch({ type: reducerCases.SET_CREATE, toggleCreate })}} className='nav_link' >
+                    <i className="fa-solid fa-circle-plus nav-icon" />
                     Create Playlist
                </NavLink>
           </div>

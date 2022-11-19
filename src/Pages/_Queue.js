@@ -4,7 +4,7 @@ import { reducerCases } from "../Utils/Const"
 import { useStateProvider } from '../Utils/StateProvider'
 
 export default function _Queue(props) {
-     const [{ token, state, nowPlaying, device, currentPlaying }, dispatch] = useStateProvider()
+     const [{ token, state, nowPlaying, device, currentPlaying, queue }, dispatch] = useStateProvider()
      const [inQueue, setQueue] = useState([])
      const [playing, setPlaying] = useState([])
      
@@ -83,19 +83,19 @@ export default function _Queue(props) {
      }
 
      useEffect(() => {
-          device.getCurrentState().then(state => {
-               if (!state) {
-                 return;
-               }
-          });
-     }, [state])
+          if(queue == true){
+               modal.classList.add('queue_open')
+          }else{
+               modal.classList.remove('queue_open')
+          }
+     }, [queue])
 
      useEffect(() => {
           getQueue()
      }, [nowPlaying])
 
      return (
-          <div className='queue_show' ref={wrapRef}>
+          <div className='queue_show' id='modal' ref={wrapRef}>
                <p className='queue-title'>NOW PLAYING</p>
                {playing.length != 0 && <div className='queue-track'>
                     <div className='image relative now-playing'>

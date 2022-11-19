@@ -5,7 +5,7 @@ import { NavLink } from 'react-router-dom'
 
 
 export default function _Playlists() {
-     const [{ token }] = useStateProvider()
+     const [{ token, toggleCreate }] = useStateProvider()
      const [playlists, setPlaylists] = useState([]) 
 
      const getPlaylists = async () => {
@@ -16,7 +16,7 @@ export default function _Playlists() {
                },
           });
           const { items } = response.data;
-
+          setPlaylists([])
           items.map(( playlist ) => {
                setPlaylists(playlists => ([...playlists, {
                     id: playlist.id,
@@ -33,7 +33,10 @@ export default function _Playlists() {
      };
 
      useEffect(() => {
-          setPlaylists([])
+          getPlaylists()
+     }, [toggleCreate])
+
+     useEffect(() => {
           getPlaylists()
      }, [])
 

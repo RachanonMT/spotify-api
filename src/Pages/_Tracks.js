@@ -7,7 +7,7 @@ import ConvertMs from '../Helpers/ConvertMs'
 import { NavLink } from 'react-router-dom'
 
 export default function _Tracks() {
-     const [{ token, currentPlaying, data, deviceId, playlist }, dispatch]  = useStateProvider()
+     const [{ token, currentPlaying, data, deviceId, playlist, toggleCreate }, dispatch]  = useStateProvider()
      const [tracks, setTracks]                    = useState([])
      const [savedTrack, setSavedTrack]            = useState([])
      const [liked, setLiked]                      = useState([])
@@ -258,7 +258,7 @@ export default function _Tracks() {
                                                        <div className='popup-content'>
                                                             <div className='popup-btn flex'>
                                                                  <i className="fa-solid fa-circle-plus"></i>
-                                                                 <p>Create New Playlist</p>
+                                                                 <p onClick={() => {const toggleCreate = true; dispatch({ type: reducerCases.SET_CREATE, toggleCreate })}}>Create New Playlist</p>
                                                             </div>
                                                             <hr className='hr'/>
                                                             {playlist.map(( playlist, i ) => {
@@ -279,7 +279,7 @@ export default function _Tracks() {
                                                        <div className='popup-content'>
                                                             {val.artistId.map(( artist, index ) => {
                                                                  return (
-                                                                      <NavLink className='popup-btn link-btn' to={`/me/artist/?id=${artist}`}>{val.artist[index]}</NavLink>
+                                                                      <NavLink className='popup-btn link-btn' key={index} to={`/me/artist/?id=${artist}`}>{val.artist[index]}</NavLink>
                                                                  )
                                                             })}
                                                        </div>

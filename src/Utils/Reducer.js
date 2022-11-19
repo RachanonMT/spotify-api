@@ -11,6 +11,7 @@ export const initialState = {
      nowPlaying: "",
      playlist: null,
      toggleCreate: false,
+     userId: null
 };
 
 const reducer = (state, action) => {
@@ -64,6 +65,11 @@ const reducer = (state, action) => {
                return {
                     ...state,
                     toggleCreate: action.toggleCreate,
+               };
+          case reducerCases.SET_USER:
+               return {
+                    ...state,
+                    userId: action.userId,
                };
           default:
                return state;

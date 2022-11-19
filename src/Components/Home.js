@@ -52,12 +52,12 @@ export default function Home() {
           <div className="container">
                <header className="header">
                     <div className="logo">
-                         
+                         <i className="fa-brands fa-spotify logo-icon" />
                     </div>
                     <label htmlFor="search" className="search-frame">
                          <div className="search-box">
                          <i className="fa-solid fa-magnifying-glass"></i>
-                         <input type="text" id="search" placeholder="What do you want to listen to?" autoComplete="off"
+                         <input type="text" className="input-search" id="search" placeholder="What do you want to listen to?" autoComplete="off"
                               value={input}
                               onInput={(e) => {setInput(e.target.value)}}
                          />
@@ -81,7 +81,7 @@ export default function Home() {
                     </div>
                </article>
                <Player/>
-               { queue == true && (<_Queue/>)}
+               <_Queue/>
                <_CreatePlaylist/>
           </div>
      )

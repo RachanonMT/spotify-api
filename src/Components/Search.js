@@ -136,7 +136,8 @@ export default function Search({query, setSearch}) {
                               {tracks.map(( val, i ) => {
                                    return (
                                         <div className='tr' key={val.id} onClick={() => {chooseTrack(val.track)}}>
-                                             <div className="cover td">
+                                             <div className="cover td relative">
+                                                  <i className="fa-solid fa-play play-track" onClick={() => {chooseTrack(val.track)}}/>
                                                   <img src={val.cover} alt="cover"/>
                                              </div>
                                              <div className="title td">{val.name}
