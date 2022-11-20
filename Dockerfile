@@ -5,16 +5,15 @@ FROM node:latest as builder
 COPY package.json package-lock.json ./
 
 # Install the dependencies and make the folder
-RUN npm install && mkdir /spotify && mv ./node_modules ./spotify
+RUN npm install && mkdir /spotify-api && mv ./node_modules ./spotify-api
 
 # Work directory
-WORKDIR /spotify
+WORKDIR /spotify-api
 
 COPY . .
 
 # Build the project and copy the files
 RUN npm run build
-
 
 # Build nginx
 FROM nginx:latest
@@ -26,7 +25,7 @@ COPY ./.nginx/nginx.conf /etc/nginx/nginx.conf
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy from the stahg 1
-COPY --from=builder /spotify/build /usr/share/nginx/html
+COPY --from=builder /spotify-api/build /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 3000 80

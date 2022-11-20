@@ -5,3 +5,5 @@ services:
     container_name: nginx
     image: react-nginx:latest
     restart: unless-stopped
+    ports:
+      - "80:80"
