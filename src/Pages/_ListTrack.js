@@ -156,17 +156,17 @@ export default function _ListTrack({tracks, savedTrack, type, setTracks}) {
                     allPopup[i].style.display = "none"
                }
                if((event.clientX) + 430 > window.innerWidth){
-                    playlist.style.left = "-238px"
+                    playlist.style.left = "-232px"
                     if(artist){
-                         artist.style.left = "-238px"
+                         artist.style.left = "-232px"
                     }
                     popup.style.left = `${event.clientX - 530}px`
                }else{
                     popup.style.left = `${event.clientX - 285}px`
                     if(event.clientX - row.left < 480){
-                         playlist.style.left = "195px"
+                         playlist.style.left = "192px"
                          if(artist){
-                              artist.style.left = "195px"
+                              artist.style.left = "192px"
                          }
                     }
                }

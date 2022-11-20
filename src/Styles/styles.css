@@ -1757,10 +1757,7 @@ html {
 }
 
 .login-btn:hover {
-     background: #6c6cdc;
-     color: #FFF;
      transition: 0.1s;
-     filter: drop-shadow(0 0 0.5rem #6c6cdc)
 }
 
 /*--------### Queue --------*/
@@ -2027,13 +2024,18 @@ html {
      top: 8px;
 }
 
+.popup-content::-webkit-scrollbar {
+     width: 4px;
+     background: transparent;
+}
+
 .popup .popup-playlist .popup-content {
      height: 200px;
      overflow-y: auto;
      color: #FFF;
      margin-left: 20px;
      padding: 7px;
-     width: 190px;
+     width: 185px;
      border-radius: 7px;
      background: #282828;
      box-shadow: rgba(00, 00, 00, 0.12) 0px 4px 4px 0px, rgba(00, 00, 00, 0.32) 0px 0px 8px 2px;
@@ -2043,7 +2045,7 @@ html {
      color: #FFF;
      margin-left: 20px;
      padding: 7px;
-     width: 190px;
+     width: 185px;
      border-radius: 7px;
      background: #282828;
      box-shadow: rgba(00, 00, 00, 0.12) 0px 4px 4px 0px, rgba(00, 00, 00, 0.32) 0px 0px 8px 2px;

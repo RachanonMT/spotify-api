@@ -6,6 +6,7 @@ import { NavLink } from 'react-router-dom'
 import _ListTrack from '../Pages/_ListTrack'
 
 export default function Search({query, setSearch}) {
+     
      const [{ token, currentPlaying }]  = useStateProvider()
      const [tracks, setTracks]                    = useState([])
      const [albums, setAlbums]                    = useState([])

@@ -74,16 +74,16 @@ export default function _ListCard({card, uri, savedAlbum, type}) {
                     allPopup[i].style.display = "none"
                }
                if((event.clientX) + 520 > window.innerWidth){
-                    playlist.style.left = "-236px"
+                    playlist.style.left = "-231px"
                     if(artist)
-                    artist.style.left = "-236px"
+                    artist.style.left = "-231px"
                     popup.style.left = `${event.clientX - row.left - 220 -10}px`
                }else{
                     popup.style.left = `${event.clientX - row.left + 10}px`
                     if(event.clientX < 480){
                          playlist.style.left = "192px"
                          if(artist)
-                         artist.style.left = "195px"
+                         artist.style.left = "192px"
                     }
                }
                if((event.clientY * 2) + 160 > window.innerHeight && event.clientY < 450){
